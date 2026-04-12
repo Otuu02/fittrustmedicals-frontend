@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
-  const { user, isLoading, _hasHydrated, wallet, orders, getFinancialMetrics } = useAuthStore();
+  // FIXED: Changed 'user' to 'customer'
+  const { customer, isLoading, _hasHydrated, wallet, orders, getFinancialMetrics } = useAuthStore();
 
   if (!_hasHydrated || isLoading) {
     return (
@@ -29,10 +30,10 @@ export default function AdminDashboardPage() {
   
   // Calculate today's earnings
   const today = new Date().toISOString().split('T')[0];
-  const todayTransactions = wallet.transactions.filter(
-    t => t.type === 'credit' && t.createdAt.startsWith(today)
-  );
-  const todayEarnings = todayTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const todayTransactions = wallet?.transactions?.filter(
+    (t: any) => t.type === 'credit' && t.createdAt?.startsWith(today)
+  ) || [];
+  const todayEarnings = todayTransactions.reduce((sum: number, t: any) => sum + t.amount, 0);
 
   const stats = [
     { 
@@ -45,7 +46,7 @@ export default function AdminDashboardPage() {
     },
     { 
       title: 'Total Orders', 
-      value: orders.length.toString(), 
+      value: orders?.length?.toString() || '0', 
       icon: ShoppingCart, 
       trend: '+5%',
       trendUp: true,
@@ -61,7 +62,7 @@ export default function AdminDashboardPage() {
     },
     { 
       title: 'Revenue', 
-      value: `₦${metrics.monthlyRevenue.toLocaleString()}`, 
+      value: `₦${metrics?.monthlyRevenue?.toLocaleString() || 0}`, 
       icon: TrendingUp, 
       trend: '+18%',
       trendUp: true,
@@ -79,7 +80,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name || 'Administrator'}!</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome back, {customer?.name || 'Administrator'}!</h1>
         <p className="text-blue-100">Here's what's happening with your store today.</p>
       </div>
 
@@ -88,7 +89,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-emerald-100 text-sm font-medium mb-1">Available Wallet Balance</p>
-            <p className="text-4xl font-bold">₦{wallet.balance.toLocaleString()}</p>
+            <p className="text-4xl font-bold">₦{(wallet?.balance || 0).toLocaleString()}</p>
             <p className="text-emerald-200 text-sm mt-2">
               +₦{todayEarnings.toLocaleString()} earned today
             </p>
@@ -100,15 +101,15 @@ export default function AdminDashboardPage() {
         <div className="flex items-center mt-6 space-x-6">
           <div>
             <p className="text-emerald-200 text-xs">Total Earned</p>
-            <p className="text-xl font-semibold">₦{wallet.totalEarned.toLocaleString()}</p>
+            <p className="text-xl font-semibold">₦{(wallet?.totalEarned || 0).toLocaleString()}</p>
           </div>
           <div>
             <p className="text-emerald-200 text-xs">Total Withdrawn</p>
-            <p className="text-xl font-semibold">₦{wallet.totalWithdrawn.toLocaleString()}</p>
+            <p className="text-xl font-semibold">₦{(wallet?.totalWithdrawn || 0).toLocaleString()}</p>
           </div>
           <div>
             <p className="text-emerald-200 text-xs">Pending Withdrawals</p>
-            <p className="text-xl font-semibold">₦{wallet.pendingWithdrawals.toLocaleString()}</p>
+            <p className="text-xl font-semibold">₦{(wallet?.pendingWithdrawals || 0).toLocaleString()}</p>
           </div>
         </div>
       </Link>
