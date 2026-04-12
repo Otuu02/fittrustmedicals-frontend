@@ -174,12 +174,12 @@ export default function PromotionsPage() {
   };
 
   const handleEditPromotion = (promo: Promotion) => {
-    setModalType(promo.type === 'banner' || promo.type === 'percentage' ? 'banner' : 'campaign');
+    setModalType(promo.bannerText || promo.type === 'percentage' ? 'banner' : 'campaign');
     setEditingPromotion(promo);
     setSelectedProducts(promo.selectedProducts || []);
     setFormData({
       name: promo.name,
-      type: promo.type === 'banner' || promo.type === 'percentage' ? 'banner' : 'campaign',
+      type: promo.bannerText || promo.type === 'percentage' ? 'banner' : 'campaign',
       value: promo.value,
       code: promo.code || '',
       startDate: promo.startDate.split('T')[0],
@@ -344,7 +344,7 @@ export default function PromotionsPage() {
         </div>
       </div>
 
-      {/* Active Promotions on Homepage Section */}
+      {/* Active Promotions on Homepage Section - FIXED */}
       {homepagePromotions.length > 0 && (
         <div>
           <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -358,7 +358,7 @@ export default function PromotionsPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className={`relative overflow-hidden rounded-2xl p-6 shadow-lg cursor-pointer hover:shadow-xl transition-shadow ${
-                  promo.type === 'banner' || promo.bannerText 
+                  promo.bannerText || promo.type === 'percentage' 
                     ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white' 
                     : 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white'
                 }`}
@@ -366,7 +366,7 @@ export default function PromotionsPage() {
               >
                 <div className="relative z-10">
                   <div className="flex items-center space-x-2 mb-3">
-                    {promo.type === 'banner' || promo.bannerText ? (
+                    {promo.bannerText || promo.type === 'percentage' ? (
                       <>
                         <Megaphone className="w-5 h-5" />
                         <span className="font-medium text-purple-100">Banner</span>
@@ -572,6 +572,7 @@ export default function PromotionsPage() {
               </button>
             </div>
 
+            {/* Rest of the modal remains the same */}
             <div className="p-6 space-y-5">
               {/* Name */}
               <div>
