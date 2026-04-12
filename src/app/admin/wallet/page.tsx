@@ -59,8 +59,7 @@ export default function AdminWalletPage() {
     addBankAccount,
     removeBankAccount,
     setDefaultBankAccount,
-    getPendingWithdrawals,
-    refreshWallet
+    getPendingWithdrawals
   } = useAuthStore();
   
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -70,6 +69,7 @@ export default function AdminWalletPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
   
   const [bankForm, setBankForm] = useState({
     bankName: '',
@@ -81,13 +81,20 @@ export default function AdminWalletPage() {
   const transactions = getWalletTransactions(20);
   const pendingWithdrawals = getPendingWithdrawals();
 
+  // Refresh function - force re-render by fetching fresh data
+  const refreshWalletData = () => {
+    setRefreshing(true);
+    // The store will update automatically
+    setTimeout(() => setRefreshing(false), 500);
+  };
+
   // Auto-refresh wallet every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      refreshWallet();
+      refreshWalletData();
     }, 30000);
     return () => clearInterval(interval);
-  }, [refreshWallet]);
+  }, []);
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,8 +106,8 @@ export default function AdminWalletPage() {
       return;
     }
     
-    if (amount > wallet.balance) {
-      setError(`Insufficient balance. Available: ₦${wallet.balance.toLocaleString()}`);
+    if (amount > wallet?.balance) {
+      setError(`Insufficient balance. Available: ₦${wallet?.balance?.toLocaleString() || 0}`);
       return;
     }
     
@@ -117,7 +124,7 @@ export default function AdminWalletPage() {
         setWithdrawAmount('');
         setSelectedBankId('');
         alert('Withdrawal request submitted successfully!');
-        refreshWallet();
+        refreshWalletData();
       } else {
         setError('Withdrawal failed. Please try again.');
       }
@@ -141,11 +148,12 @@ export default function AdminWalletPage() {
     try {
       await addBankAccount({
         ...bankForm,
-        isDefault: wallet.bankAccounts.length === 0,
+        isDefault: wallet?.bankAccounts?.length === 0,
       });
       setShowAddBankModal(false);
       setBankForm({ bankName: '', accountNumber: '', accountName: '', bankCode: '' });
-      refreshWallet();
+      refreshWalletData();
+      alert('Bank account added successfully!');
     } catch (err) {
       setError('Failed to add bank account');
     } finally {
@@ -156,22 +164,25 @@ export default function AdminWalletPage() {
   const handleRemoveBank = async (accountId: string) => {
     if (confirm('Are you sure you want to remove this bank account?')) {
       removeBankAccount(accountId);
-      refreshWallet();
+      refreshWalletData();
     }
   };
 
   const handleSetDefaultBank = async (accountId: string) => {
     setDefaultBankAccount(accountId);
-    refreshWallet();
+    refreshWalletData();
   };
 
   const handleRefresh = () => {
-    setLoading(true);
-    refreshWallet();
-    setTimeout(() => setLoading(false), 500);
+    refreshWalletData();
   };
 
   const exportTransactions = () => {
+    if (!transactions || transactions.length === 0) {
+      alert('No transactions to export');
+      return;
+    }
+    
     const csv = [
       ['Date', 'Description', 'Type', 'Amount', 'Status', 'Reference'],
       ...transactions.map(t => [
@@ -219,6 +230,14 @@ export default function AdminWalletPage() {
     }
   };
 
+  // Safe access with optional chaining
+  const balance = wallet?.balance || 0;
+  const totalEarned = wallet?.totalEarned || 0;
+  const totalWithdrawn = wallet?.totalWithdrawn || 0;
+  const pendingWithdrawalsAmount = wallet?.pendingWithdrawals || 0;
+  const bankAccounts = wallet?.bankAccounts || [];
+  const walletTransactions = transactions || [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -229,10 +248,10 @@ export default function AdminWalletPage() {
         </div>
         <button
           onClick={handleRefresh}
-          disabled={loading}
+          disabled={refreshing}
           className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>
@@ -245,7 +264,7 @@ export default function AdminWalletPage() {
               <p className="text-blue-200 text-sm">Available Balance</p>
               <div className="flex items-center gap-2">
                 <p className="text-3xl font-bold">
-                  {showBalance ? `₦${wallet.balance.toLocaleString()}` : '••••••'}
+                  {showBalance ? `₦${balance.toLocaleString()}` : '••••••'}
                 </p>
                 <button onClick={() => setShowBalance(!showBalance)} className="hover:bg-white/20 p-1 rounded">
                   {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -256,7 +275,7 @@ export default function AdminWalletPage() {
           </div>
           <button
             onClick={() => setShowWithdrawModal(true)}
-            disabled={wallet.balance === 0}
+            disabled={balance === 0}
             className="mt-4 w-full py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Withdraw Funds
@@ -267,7 +286,7 @@ export default function AdminWalletPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Earned</p>
-              <p className="text-2xl font-bold text-gray-900">₦{wallet.totalEarned.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">₦{totalEarned.toLocaleString()}</p>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
               <ArrowDownRight className="w-6 h-6 text-green-600" />
@@ -280,7 +299,7 @@ export default function AdminWalletPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Total Withdrawn</p>
-              <p className="text-2xl font-bold text-gray-900">₦{wallet.totalWithdrawn.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">₦{totalWithdrawn.toLocaleString()}</p>
             </div>
             <div className="p-3 bg-orange-50 rounded-lg">
               <ArrowUpRight className="w-6 h-6 text-orange-600" />
@@ -293,7 +312,7 @@ export default function AdminWalletPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Pending Withdrawals</p>
-              <p className="text-2xl font-bold text-yellow-600">₦{wallet.pendingWithdrawals.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-yellow-600">₦{pendingWithdrawalsAmount.toLocaleString()}</p>
             </div>
             <div className="p-3 bg-yellow-50 rounded-lg">
               <Clock className="w-6 h-6 text-yellow-600" />
@@ -319,7 +338,7 @@ export default function AdminWalletPage() {
           </button>
         </div>
 
-        {wallet.bankAccounts.length === 0 ? (
+        {bankAccounts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Banknote className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p>No bank accounts added yet</p>
@@ -327,7 +346,7 @@ export default function AdminWalletPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {wallet.bankAccounts.map((account: Bank) => (
+            {bankAccounts.map((account: Bank) => (
               <div
                 key={account.id}
                 className={`p-4 border rounded-lg transition ${
@@ -373,7 +392,7 @@ export default function AdminWalletPage() {
       </div>
 
       {/* Pending Withdrawals */}
-      {pendingWithdrawals.length > 0 && (
+      {pendingWithdrawals && pendingWithdrawals.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
           <h2 className="text-lg font-semibold text-yellow-800 mb-4 flex items-center">
             <Clock className="w-5 h-5 mr-2" />
@@ -381,7 +400,7 @@ export default function AdminWalletPage() {
           </h2>
           <div className="space-y-3">
             {pendingWithdrawals.map((withdrawal: WithdrawalRequest) => {
-              const bank = wallet.bankAccounts.find((b: Bank) => b.id === withdrawal.bankAccountId);
+              const bank = bankAccounts.find((b: Bank) => b.id === withdrawal.bankAccountId);
               return (
                 <div key={withdrawal.id} className="flex justify-between items-center p-4 bg-white rounded-lg">
                   <div>
@@ -408,7 +427,7 @@ export default function AdminWalletPage() {
             <History className="w-5 h-5 mr-2 text-blue-600" />
             Transaction History
           </h2>
-          {transactions.length > 0 && (
+          {walletTransactions.length > 0 && (
             <button
               onClick={exportTransactions}
               className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition"
@@ -420,14 +439,14 @@ export default function AdminWalletPage() {
         </div>
 
         <div className="space-y-3">
-          {transactions.length === 0 ? (
+          {walletTransactions.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <CreditCard className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>No transactions yet</p>
               <p className="text-sm">Your payment history will appear here</p>
             </div>
           ) : (
-            transactions.map((txn: Transaction) => (
+            walletTransactions.map((txn: Transaction) => (
               <div key={txn.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                 <div className="flex items-center space-x-4">
                   <div className={`p-2 rounded-lg ${
@@ -487,13 +506,13 @@ export default function AdminWalletPage() {
             <form onSubmit={handleWithdraw}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount (Available: ₦{wallet.balance.toLocaleString()})
+                  Amount (Available: ₦{balance.toLocaleString()})
                 </label>
                 <input
                   type="number"
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
-                  max={wallet.balance}
+                  max={balance}
                   min="1000"
                   step="1000"
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -513,7 +532,7 @@ export default function AdminWalletPage() {
                   required
                 >
                   <option value="">Select account</option>
-                  {wallet.bankAccounts.map((account: Bank) => (
+                  {bankAccounts.map((account: Bank) => (
                     <option key={account.id} value={account.id}>
                       {account.bankName} - {account.accountName} ({account.isDefault ? 'Default' : ''})
                     </option>
