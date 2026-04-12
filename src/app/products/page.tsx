@@ -1,30 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/product/ProductCard';
-import { PRODUCT_CATEGORIES } from '@/lib/constants';
 import { Search, SlidersHorizontal } from 'lucide-react';
 
-// Reusing mock data for structure
-const MOCK_PRODUCTS = [
-  { id: '1', name: 'Digital Thermometer', price: 29.99, category: 'Diagnostics', description: 'Accurate fast reading.', image: '', stock: 50, rating: 4.5, reviews: 12 },
-  { id: '2', name: 'Blood Pressure Monitor', price: 89.99, category: 'Monitoring', description: 'Arm cuff monitor.', image: '', stock: 15, rating: 4.8, reviews: 124 },
-  { id: '3', name: 'Pulse Oximeter', price: 34.50, category: 'Monitoring', description: 'Oxygen saturation monitor.', image: '', stock: 100, rating: 4.6, reviews: 89 },
-  { id: '4', name: 'N95 Face Masks (50 Pack)', price: 45.00, category: 'Protection', description: 'Medical grade masks.', image: '', stock: 500, rating: 4.9, reviews: 450 },
-  { id: '5', name: 'First Aid Kit Pro', price: 120.00, category: 'First Aid', description: 'Comprehensive emergency kit.', image: '', stock: 25, rating: 4.7, reviews: 56 },
-  { id: '6', name: 'Standard Wheelchair', price: 250.00, category: 'Mobility', description: 'Lightweight folding wheelchair.', image: '', stock: 5, rating: 4.4, reviews: 18 },
-];
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  category: string;
+  description: string;
+  image: string;
+  stock: number;
+  status: string;
+  rating: number;
+  reviewCount: number;
+  isPromotional?: boolean;
+  discountPercentage?: number;
+  featured?: boolean;
+}
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter logic
-  const filteredProducts = MOCK_PRODUCTS.filter(product => {
+  // Fetch products from API
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/catalog/products');
+      const data = await response.json();
+      
+      let productsData = [];
+      if (data.success && data.products) {
+        productsData = data.products;
+      } else if (Array.isArray(data)) {
+        productsData = data;
+      } else if (data.products) {
+        productsData = data.products;
+      }
+      
+      setProducts(productsData);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Get unique categories
+  const categories = ['All', ...new Set(products.map(p => p.category))];
+
+  // Filter products
+  const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -58,19 +105,15 @@ export default function ProductsPage() {
             
             <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
             <ul className="space-y-2">
-              <li>
-                <button
-                  onClick={() => setActiveCategory('All')}
-                  className={`w-full text-left flex justify-between items-center px-2 py-1.5 rounded transition ${activeCategory === 'All' ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                  All Products
-                </button>
-              </li>
-              {PRODUCT_CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <li key={category}>
                   <button
                     onClick={() => setActiveCategory(category)}
-                    className={`w-full text-left flex justify-between items-center px-2 py-1.5 rounded transition ${activeCategory === category ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`w-full text-left px-2 py-1.5 rounded transition ${
+                      activeCategory === category 
+                        ? 'text-blue-600 font-medium bg-blue-50' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
                   >
                     {category}
                   </button>
@@ -80,14 +123,14 @@ export default function ProductsPage() {
           </div>
         </aside>
 
-        {/* Product Grid */}
+        {/* Product Grid - Card Layout */}
         <main className="flex-1">
           <div className="mb-4 text-sm text-gray-500">
             Showing {filteredProducts.length} results
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -97,12 +140,6 @@ export default function ProductsPage() {
               <Search className="mx-auto text-gray-300 mb-4" size={48} />
               <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
               <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-              <button 
-                onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
-                className="mt-6 text-blue-600 font-medium hover:underline"
-              >
-                Clear all filters
-              </button>
             </div>
           )}
         </main>

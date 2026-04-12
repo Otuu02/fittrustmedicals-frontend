@@ -1,5 +1,4 @@
-import { apiClient } from '@/lib/api';
-import { User, ApiResponse } from '@/lib/types';
+import apiClient, { ApiResponse } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 
 export interface LoginRequest {
@@ -16,25 +15,56 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  user: User;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    phone?: string;
+  };
   token: string;
 }
 
 export const authService = {
   async login(credentials: LoginRequest) {
     try {
-      const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/login',
-        credentials
-      );
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
 
-      if (response.data.data) {
-        const { user, token } = response.data.data;
-        useAuthStore.getState().login(user, token);
-        return response.data.data;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
 
-      throw new Error(response.data.error || 'Login failed');
+      if (data.success && data.data) {
+        const { user, token } = data.data;
+        
+        useAuthStore.setState({
+          customer: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            addresses: [],
+            wishlist: [],
+            notifications: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            role: user.role,
+          },
+          isAuthenticated: true,
+          isAdmin: user.role === 'admin',
+        });
+        
+        localStorage.setItem('token', token);
+        return data.data;
+      }
+
+      throw new Error(data.message || 'Login failed');
     } catch (error) {
       throw error;
     }
@@ -46,23 +76,48 @@ export const authService = {
         throw new Error('Passwords do not match');
       }
 
-      const response = await apiClient.post<ApiResponse<AuthResponse>>(
-        '/auth/register',
-        {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${data.firstName} ${data.lastName}`,
           email: data.email,
           password: data.password,
-          firstName: data.firstName,
-          lastName: data.lastName,
-        }
-      );
+          phone: '',
+        }),
+      });
 
-      if (response.data.data) {
-        const { user, token } = response.data.data;
-        useAuthStore.getState().login(user, token);
-        return response.data.data;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Registration failed');
       }
 
-      throw new Error(response.data.error || 'Registration failed');
+      if (result.success && result.data) {
+        const { user, token } = result.data;
+        
+        useAuthStore.setState({
+          customer: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            addresses: [],
+            wishlist: [],
+            notifications: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            role: user.role,
+          },
+          isAuthenticated: true,
+          isAdmin: false,
+        });
+        
+        localStorage.setItem('token', token);
+        return result.data;
+      }
+
+      throw new Error(result.message || 'Registration failed');
     } catch (error) {
       throw error;
     }
@@ -70,71 +125,33 @@ export const authService = {
 
   async logout() {
     try {
-      await apiClient.post('/auth/logout');
+      localStorage.removeItem('token');
       useAuthStore.getState().logout();
     } catch (error) {
-      useAuthStore.getState().logout();
-      throw error;
+      console.error('Logout error:', error);
     }
   },
 
   async getCurrentUser() {
     try {
-      const response = await apiClient.get<ApiResponse<User>>('/auth/me');
-      if (response.data.data) {
-        useAuthStore.getState().setUser(response.data.data);
-        return response.data.data;
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token');
+
+      const response = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+      
+      if (data.success && data.user) {
+        useAuthStore.setState({
+          customer: data.user,
+          isAuthenticated: true,
+          isAdmin: data.user.role === 'admin',
+        });
+        return data.user;
       }
       throw new Error('Failed to fetch user');
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  async updateProfile(data: Partial<User>) {
-    try {
-      const response = await apiClient.put<ApiResponse<User>>('/auth/profile', data);
-
-      if (response.data.data) {
-        useAuthStore.getState().setUser(response.data.data);
-        return response.data.data;
-      }
-
-      throw new Error(response.data.error || 'Update failed');
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  async changePassword(oldPassword: string, newPassword: string) {
-    try {
-      const response = await apiClient.post<ApiResponse<void>>('/auth/change-password', {
-        oldPassword,
-        newPassword,
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  async resetPassword(email: string) {
-    try {
-      const response = await apiClient.post<ApiResponse<void>>('/auth/reset-password', {
-        email,
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  async verifyToken(token: string) {
-    try {
-      const response = await apiClient.post<ApiResponse<User>>('/auth/verify-token', {
-        token,
-      });
-      return response.data;
     } catch (error) {
       throw error;
     }

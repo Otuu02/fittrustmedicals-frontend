@@ -1,103 +1,172 @@
-// src/app/admin/page.tsx
 'use client';
 
-import { Card } from '@/components/ui/Card';
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { useAuthStore } from '@/stores/authStore';
 import { 
-  TrendingUp, 
-  DollarSign, 
+  Package, 
   ShoppingCart, 
-  Users,
-  Package,
-  AlertCircle
+  Users, 
+  UserCog,
+  TrendingUp,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 
-export default function AdminDashboard() {
+export default function AdminDashboardPage() {
+  const { user, isLoading, _hasHydrated, wallet, orders, getFinancialMetrics } = useAuthStore();
+
+  if (!_hasHydrated || isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const metrics = getFinancialMetrics('daily');
+  
+  // Calculate today's earnings
+  const today = new Date().toISOString().split('T')[0];
+  const todayTransactions = wallet.transactions.filter(
+    t => t.type === 'credit' && t.createdAt.startsWith(today)
+  );
+  const todayEarnings = todayTransactions.reduce((sum, t) => sum + t.amount, 0);
+
   const stats = [
-    { label: 'Total Revenue', value: '$45,231.89', change: '+20.1%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Orders', value: '1,234', change: '+12.5%', icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Products', value: '456', change: '+4.3%', icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Customers', value: '2,350', change: '+18.2%', icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { 
+      title: 'Total Products', 
+      value: '0', 
+      icon: Package, 
+      trend: '+12%',
+      trendUp: true,
+      color: 'blue'
+    },
+    { 
+      title: 'Total Orders', 
+      value: orders.length.toString(), 
+      icon: ShoppingCart, 
+      trend: '+5%',
+      trendUp: true,
+      color: 'green'
+    },
+    { 
+      title: 'Total Customers', 
+      value: '6', 
+      icon: Users, 
+      trend: '-2%',
+      trendUp: false,
+      color: 'purple'
+    },
+    { 
+      title: 'Revenue', 
+      value: `₦${metrics.monthlyRevenue.toLocaleString()}`, 
+      icon: TrendingUp, 
+      trend: '+18%',
+      trendUp: true,
+      color: 'orange'
+    },
   ];
 
-  const recentOrders = [
-    { id: 'ORD-001', customer: 'John Doe', amount: 299.99, status: 'Completed', date: '2024-03-20' },
-    { id: 'ORD-002', customer: 'Jane Smith', amount: 149.50, status: 'Processing', date: '2024-03-20' },
-    { id: 'ORD-003', customer: 'Bob Johnson', amount: 499.99, status: 'Pending', date: '2024-03-19' },
-  ];
-
-  const lowStockProducts = [
-    { name: 'Digital Thermometer', stock: 5 },
-    { name: 'Blood Pressure Monitor', stock: 3 },
-    { name: 'Stethoscope', stock: 2 },
+  const quickActions = [
+    { href: '/admin/products', label: 'Manage Products', color: 'bg-blue-600 hover:bg-blue-700', icon: Package },
+    { href: '/admin/orders', label: 'View Orders', color: 'bg-green-600 hover:bg-green-700', icon: ShoppingCart },
+    { href: '/admin/users', label: 'Manage Users', color: 'bg-purple-600 hover:bg-purple-700', icon: UserCog },
   ];
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening with your store.</p>
+      {/* Welcome Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
+        <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.name || 'Administrator'}!</h1>
+        <p className="text-blue-100">Here's what's happening with your store today.</p>
       </div>
+
+      {/* Wallet Balance Card */}
+      <Link href="/admin/wallet" className="block bg-gradient-to-r from-emerald-500 to-emerald-700 rounded-2xl p-8 text-white shadow-lg hover:shadow-xl transition-shadow">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-emerald-100 text-sm font-medium mb-1">Available Wallet Balance</p>
+            <p className="text-4xl font-bold">₦{wallet.balance.toLocaleString()}</p>
+            <p className="text-emerald-200 text-sm mt-2">
+              +₦{todayEarnings.toLocaleString()} earned today
+            </p>
+          </div>
+          <div className="p-4 bg-white/20 rounded-xl backdrop-blur-sm">
+            <Wallet className="w-12 h-12 text-white" />
+          </div>
+        </div>
+        <div className="flex items-center mt-6 space-x-6">
+          <div>
+            <p className="text-emerald-200 text-xs">Total Earned</p>
+            <p className="text-xl font-semibold">₦{wallet.totalEarned.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-emerald-200 text-xs">Total Withdrawn</p>
+            <p className="text-xl font-semibold">₦{wallet.totalWithdrawn.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-emerald-200 text-xs">Pending Withdrawals</p>
+            <p className="text-xl font-semibold">₦{wallet.pendingWithdrawals.toLocaleString()}</p>
+          </div>
+        </div>
+      </Link>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <Card key={index} className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-lg ${stat.bg}`}>
-                <stat.icon className={stat.color} size={24} />
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          const TrendIcon = stat.trendUp ? ArrowUpRight : ArrowDownRight;
+          
+          return (
+            <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`p-3 rounded-lg bg-${stat.color}-50`}>
+                  <Icon className={`w-6 h-6 text-${stat.color}-600`} />
+                </div>
+                <div className={`flex items-center text-sm ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
+                  <TrendIcon className="w-4 h-4 mr-1" />
+                  {stat.trend}
+                </div>
               </div>
-              <span className="text-sm font-medium text-green-600">{stat.change}</span>
+              <h3 className="text-gray-500 text-sm font-medium">{stat.title}</h3>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-            <p className="text-sm text-gray-600 mt-1">{stat.label}</p>
-          </Card>
-        ))}
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Orders */}
-        <Card className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Orders</h2>
-          <div className="space-y-4">
-            {recentOrders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between py-3 border-b last:border-0">
-                <div>
-                  <p className="font-semibold text-gray-900">{order.id}</p>
-                  <p className="text-sm text-gray-600">{order.customer}</p>
-                  <p className="text-xs text-gray-500">{order.date}</p>
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {quickActions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <Link 
+                key={index}
+                href={action.href}
+                className={`${action.color} text-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Icon className="w-6 h-6" />
+                  <span className="font-semibold text-lg">{action.label}</span>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900">${order.amount.toFixed(2)}</p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    order.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                    order.status === 'Processing' ? 'bg-blue-100 text-blue-700' :
-                    'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {order.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+                <ArrowUpRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* Low Stock Alert */}
-        <Card className="p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <AlertCircle className="text-orange-600" size={24} />
-            <h2 className="text-xl font-bold text-gray-900">Low Stock Alert</h2>
-          </div>
-          <div className="space-y-4">
-            {lowStockProducts.map((product, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b last:border-0">
-                <p className="text-gray-900">{product.name}</p>
-                <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">
-                  {product.stock} left
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
+      {/* Recent Activity Placeholder */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+        <div className="text-center py-12 text-gray-500">
+          <p>No recent activity to display.</p>
+          <p className="text-sm mt-1">Activity will appear here as orders come in.</p>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,21 @@
 // src/lib/auth.ts
-import { jwtDecode } from 'jwt-decode';
+
+// Simple JWT decoder - no external package required
+function jwtDecode<T>(token: string): T {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    throw new Error('Invalid token');
+  }
+}
 
 interface DecodedToken {
   sub: string;
@@ -14,6 +30,7 @@ export class AuthManager {
   private static readonly REFRESH_TOKEN_KEY = 'refreshToken';
 
   static setToken(token: string): void {
+    if (typeof window === 'undefined') return;
     localStorage.setItem(this.TOKEN_KEY, token);
   }
 
@@ -23,6 +40,7 @@ export class AuthManager {
   }
 
   static setRefreshToken(token: string): void {
+    if (typeof window === 'undefined') return;
     localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
   }
 
@@ -32,6 +50,7 @@ export class AuthManager {
   }
 
   static clearTokens(): void {
+    if (typeof window === 'undefined') return;
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
   }

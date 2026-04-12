@@ -1,126 +1,156 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
-import { User, Package, Heart, Settings, LogOut, MapPin } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { 
+  ShoppingBag, 
+  MapPin, 
+  Heart, 
+  Bell, 
+  User, 
+  Package,
+  Truck,
+  CheckCircle,
+  Clock
+} from 'lucide-react';
 
-export default function AccountPage() {
-  const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const [isMounted, setIsMounted] = useState(false);
+export default function AccountDashboard() {
+  const { customer, orders, getUnreadCount } = useAuthStore();
 
-  useEffect(() => {
-    setIsMounted(true);
-    if (isMounted && !isAuthenticated) {
-      router.push('/login');
+  const recentOrders = orders.slice(0, 3);
+  const unreadCount = getUnreadCount();
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'shipped':
+        return <Truck className="w-5 h-5 text-blue-500" />;
+      case 'processing':
+        return <Package className="w-5 h-5 text-yellow-500" />;
+      default:
+        return <Clock className="w-5 h-5 text-gray-500" />;
     }
-  }, [isAuthenticated, isMounted, router]);
-
-  if (!isMounted || !isAuthenticated) return null;
-
-  const handleLogout = () => {
-    logout();
-    router.push('/');
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Account</h1>
-        <p className="text-gray-500 mt-1">Manage your profile, orders, and preferences</p>
+    <div className="space-y-6">
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
+        <h1 className="text-3xl font-bold mb-2">Welcome back, {customer?.name}!</h1>
+        <p className="text-blue-100">Manage your orders, addresses, and account settings.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Sidebar Navigation */}
-        <div className="md:col-span-1">
-          <Card className="p-2 space-y-1">
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg bg-blue-50 text-blue-700 font-medium">
-              <User size={20} />
-              Profile Overview
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg text-gray-600 hover:bg-gray-50 transition">
-              <Package size={20} />
-              Order History
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg text-gray-600 hover:bg-gray-50 transition">
-              <Heart size={20} />
-              Wishlist
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg text-gray-600 hover:bg-gray-50 transition">
-              <MapPin size={20} />
-              Saved Addresses
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg text-gray-600 hover:bg-gray-50 transition">
-              <Settings size={20} />
-              Settings
-            </button>
-            <div className="pt-4 mt-4 border-t border-gray-100">
-              <button 
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg text-red-600 hover:bg-red-50 transition font-medium"
-              >
-                <LogOut size={20} />
-                Sign Out
-              </button>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Link href="/account/orders" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <ShoppingBag className="w-6 h-6 text-blue-600" />
             </div>
-          </Card>
+            <span className="text-2xl font-bold text-gray-900">{orders.length}</span>
+          </div>
+          <p className="text-gray-600 font-medium">Total Orders</p>
+        </Link>
+
+        <Link href="/account/addresses" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-orange-50 rounded-lg">
+              <MapPin className="w-6 h-6 text-orange-600" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">{customer?.addresses.length || 0}</span>
+          </div>
+          <p className="text-gray-600 font-medium">Saved Addresses</p>
+        </Link>
+
+        <Link href="/account/wishlist" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-red-50 rounded-lg">
+              <Heart className="w-6 h-6 text-red-600" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">{customer?.wishlist.length || 0}</span>
+          </div>
+          <p className="text-gray-600 font-medium">Wishlist Items</p>
+        </Link>
+
+        <Link href="/account/notifications" className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <Bell className="w-6 h-6 text-purple-600" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">{unreadCount}</span>
+          </div>
+          <p className="text-gray-600 font-medium">Unread Notifications</p>
+        </Link>
+      </div>
+
+      {/* Recent Orders */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+          <Link href="/account/orders" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+            View All Orders →
+          </Link>
         </div>
 
-        {/* Main Content Area */}
-        <div className="md:col-span-3 space-y-6">
-          {/* Profile Overview Card */}
-          <Card>
-            <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold">
-                  {user?.name?.charAt(0) || 'U'}
+        {recentOrders.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>No orders yet</p>
+            <Link href="/products" className="text-blue-600 hover:underline mt-2 inline-block">
+              Start Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentOrders.map((order) => (
+              <div key={order.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-4">
+                  {getStatusIcon(order.status)}
+                  <div>
+                    <p className="font-medium text-gray-900">Order #{order.orderNumber}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()} • {order.items.length} items
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">{user?.name || 'User'}</h2>
-                  <p className="text-gray-500">{user?.email}</p>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900">₦{order.total.toLocaleString()}</p>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                    order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {order.status.replace('_', ' ').toUpperCase()}
+                  </span>
                 </div>
               </div>
-              <Button variant="secondary">Edit Profile</Button>
-            </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Account Details</h3>
-                <div className="space-y-2 text-gray-900">
-                  <p><span className="text-gray-500 inline-block w-24">Role:</span> {user?.role || 'Customer'}</p>
-                  <p><span className="text-gray-500 inline-block w-24">Phone:</span> Not provided</p>
-                  <p><span className="text-gray-500 inline-block w-24">Joined:</span> Just now</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Default Address</h3>
-                <div className="text-gray-900 bg-gray-50 p-4 rounded-lg">
-                  <p className="font-medium">{user?.name}</p>
-                  <p className="text-gray-600 text-sm mt-1">No default address set.</p>
-                  <button className="text-blue-600 text-sm font-medium mt-2 hover:underline">Add Address</button>
-                </div>
-              </div>
-            </div>
-          </Card>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link href="/account/profile" className="flex items-center space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="p-3 bg-gray-100 rounded-lg">
+            <User className="w-6 h-6 text-gray-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">Update Profile</p>
+            <p className="text-sm text-gray-500">Manage your personal information</p>
+          </div>
+        </Link>
 
-          {/* Recent Orders Snapshot */}
-          <Card>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Recent Orders</h2>
-              <button className="text-blue-600 text-sm font-medium hover:underline">View All</button>
-            </div>
-            
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-              <Package size={40} className="mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-600 font-medium">No orders yet</p>
-              <p className="text-sm text-gray-500 mt-1">When you place an order, it will appear here.</p>
-              <Button className="mt-4" onClick={() => router.push('/products')}>Start Shopping</Button>
-            </div>
-          </Card>
-        </div>
+        <Link href="/products" className="flex items-center space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="p-3 bg-blue-100 rounded-lg">
+            <ShoppingBag className="w-6 h-6 text-blue-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">Continue Shopping</p>
+            <p className="text-sm text-gray-500">Browse our latest products</p>
+          </div>
+        </Link>
       </div>
     </div>
   );

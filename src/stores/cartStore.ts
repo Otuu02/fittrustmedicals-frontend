@@ -3,67 +3,114 @@ import { persist } from 'zustand/middleware';
 
 export interface CartItem {
   id: string;
+  productId: string;
   name: string;
   price: number;
   quantity: number;
-  image?: string;
+  image: string;
+  category: string;
+  maxStock: number;
 }
 
-interface CartState {
+interface CartStore {
   items: CartItem[];
+  isOpen: boolean;
+  
+  // Actions
   addItem: (item: Omit<CartItem, 'id'>) => void;
-  updateQuantity: (id: string, quantity: number) => void;
-  removeItem: (id: string) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  toggleCart: () => void;
+  openCart: () => void;
+  closeCart: () => void;
+  
+  // Computed
+  getTotalItems: () => number;
+  getTotalPrice: () => number;
+  getItemCount: (productId: string) => number;
 }
 
-export const useCartStore = create<CartState>()(
+export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      
-      addItem: (item) =>
-        set((state) => {
-          const existing = state.items.find((i) => i.name === item.name);
-          if (existing) {
-            return {
-              items: state.items.map((i) =>
-                i.name === item.name
-                  ? { ...i, quantity: i.quantity + (item.quantity || 1) }
-                  : i
-              ),
-            };
-          }
-          return {
-            items: [...state.items, { ...item, id: crypto.randomUUID() }],
-          };
-        }),
+      isOpen: false,
+
+      addItem: (item) => {
+        const existingItem = get().items.find((i) => i.productId === item.productId);
         
-      updateQuantity: (id, quantity) =>
+        if (existingItem) {
+          const newQuantity = Math.min(existingItem.quantity + item.quantity, existingItem.maxStock);
+          set((state) => ({
+            items: state.items.map((i) =>
+              i.productId === item.productId
+                ? { ...i, quantity: newQuantity }
+                : i
+            ),
+          }));
+        } else {
+          set((state) => ({
+            items: [...state.items, { ...item, id: Date.now().toString() }],
+          }));
+        }
+        
+        // Auto-open cart when adding item
+        set({ isOpen: true });
+      },
+
+      removeItem: (productId) => {
+        console.log('Removing item:', productId);
         set((state) => ({
-          items: quantity <= 0
-            ? state.items.filter((item) => item.id !== id)
-            : state.items.map((item) =>
-                item.id === id ? { ...item, quantity } : item
-              ),
-        })),
+          items: state.items.filter((i) => i.productId !== productId),
+        }));
+      },
+
+      updateQuantity: (productId, quantity) => {
+        console.log('Updating quantity:', { productId, quantity });
         
-      removeItem: (id) =>
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== id),
-        })),
+        if (quantity <= 0) {
+          get().removeItem(productId);
+          return;
+        }
         
-      clearCart: () => set({ items: [] }),
+        const item = get().items.find((i) => i.productId === productId);
+        if (item) {
+          const maxQuantity = item.maxStock || 99;
+          const newQuantity = Math.min(quantity, maxQuantity);
+          
+          set((state) => ({
+            items: state.items.map((i) =>
+              i.productId === productId ? { ...i, quantity: newQuantity } : i
+            ),
+          }));
+        }
+      },
+
+      clearCart: () => {
+        console.log('Clearing cart');
+        set({ items: [] });
+      },
+
+      toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
+
+      getTotalItems: () => {
+        return get().items.reduce((total, item) => total + item.quantity, 0);
+      },
+
+      getTotalPrice: () => {
+        return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
+      },
+
+      getItemCount: (productId) => {
+        const item = get().items.find((i) => i.productId === productId);
+        return item?.quantity || 0;
+      },
     }),
     {
-      name: 'cart-storage',
+      name: 'fittrust-cart',
     }
   )
 );
-
-// Helper selectors (use these instead of methods inside store)
-export const getCartTotal = (items: CartItem[]) =>
-  items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-export const getCartItemCount = (items: CartItem[]) =>
-  items.reduce((sum, item) => sum + item.quantity, 0);

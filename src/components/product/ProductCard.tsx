@@ -1,127 +1,182 @@
 'use client';
 
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
-import { useCartStore } from '@/stores/cartStore';
-import { useState } from 'react';
 import Link from 'next/link';
-import { formatPrice } from '@/lib/utils';
+import { useState } from 'react';
+import SafeImage, { getValidImageUrl } from '@/components/ui/SafeImage';
+import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface Product {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
+  category: string;
   description: string;
   image: string;
   stock: number;
-  category: string;
+  status: string;
+  isPromotional?: boolean;
+  discountPercentage?: number;
+  featured?: boolean;
   rating: number;
-  reviews: number;
+  reviewCount: number;
 }
 
 interface ProductCardProps {
   product: Product;
+  showDiscount?: boolean;
   onAddSuccess?: () => void;
 }
 
-export function ProductCard({ product, onAddSuccess }: ProductCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
+export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCardProps) {
+  const { addItem } = useCartStore();
+  const { isAuthenticated, addToWishlist, removeFromWishlist, isInWishlist } = useAuthStore();
+  
+  const inWishlist = isInWishlist(product.id);
+  const [imageError, setImageError] = useState(false);
 
-  const handleAddToCart = async () => {
-    setIsAdding(true);
-    try {
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        image: product.image,
-      } as any);
-      onAddSuccess?.();
-    } finally {
-      setIsAdding(false);
+  const imageUrl = imageError 
+    ? getValidImageUrl(null, product.category)
+    : getValidImageUrl(product.image, product.category);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (product.stock <= 0) return;
+    
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: imageUrl,
+      category: product.category,
+      maxStock: product.stock,
+    });
+    
+    onAddSuccess?.();
+  };
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+    
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product.id);
     }
   };
 
+  const formatPrice = (price: number) => {
+    if (!price && price !== 0) return '₦0';
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
   return (
-    <Card className="relative overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col">
-      <div className="relative h-48 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg mb-4 overflow-hidden group flex items-center justify-center">
-        <span className="text-gray-500 text-center text-sm font-medium">{product.name}</span>
-
-        {product.stock === 0 && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <span className="text-white font-bold">Out of Stock</span>
+    <motion.div
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.3 }}
+      className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
+    >
+      <Link href={`/products/${product.id}`}>
+        <div className="relative aspect-square overflow-hidden bg-gray-100">
+          <SafeImage
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            fallback={getValidImageUrl(null, product.category)}
+          />
+          
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            {product.isPromotional && showDiscount && product.discountPercentage && (
+              <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                -{product.discountPercentage}%
+              </span>
+            )}
+            {product.featured && (
+              <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                Featured
+              </span>
+            )}
           </div>
-        )}
 
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all" />
-      </div>
+          {/* Wishlist Button */}
+          <button 
+            onClick={handleWishlist}
+            className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
+              inWishlist 
+                ? 'bg-red-500 text-white' 
+                : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500'
+            }`}
+          >
+            <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
+          </button>
 
-      <button
-        onClick={() => setIsFavorite(!isFavorite)}
-        className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors z-10"
-      >
-        <Heart
-          size={20}
-          className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}
-        />
-      </button>
+          {/* Quick Add Button */}
+          <button 
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            <ShoppingCart className="w-5 h-5" />
+          </button>
+        </div>
 
-      <div className="absolute top-4 left-4">
-        <Badge label={product.category} variant="primary" />
-      </div>
-
-      <div className="flex-grow space-y-3">
-        <Link href={`/products/${product.id}`}>
-          <h3 className="font-bold text-lg text-gray-900 line-clamp-2 hover:text-blue-600 transition-colors">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+              {product.category}
+            </span>
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 text-yellow-400 fill-current" />
+              <span className="text-sm text-gray-600">{product.rating || '0.0'}</span>
+            </div>
+          </div>
+          
+          <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
             {product.name}
           </h3>
-        </Link>
-
-        <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={16}
-                className={
-                  i < Math.round(product.rating)
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-gray-300'
-                }
-              />
-            ))}
-          </div>
-          <span className="text-sm text-gray-600">
-            ({product.reviews})
-          </span>
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center pt-4 border-t mt-4">
-        <div>
-          <p className="text-2xl font-bold text-blue-600">{formatPrice(product.price)}</p>
-          <p className="text-xs text-gray-500">
-            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+          
+          <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+            {product.description}
           </p>
+
+          {/* Price Section */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xl font-bold text-gray-800">
+                {formatPrice(product.price)}
+              </span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="ml-2 text-sm text-gray-400 line-through">
+                  {formatPrice(product.originalPrice)}
+                </span>
+              )}
+            </div>
+            <span className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            </span>
+          </div>
         </div>
-        <Button
-          size="sm"
-          onClick={handleAddToCart}
-          disabled={product.stock === 0 || isAdding}
-          isLoading={isAdding}
-          className="flex items-center gap-2"
-        >
-          <ShoppingCart size={16} />
-          Add
-        </Button>
-      </div>
-    </Card>
+      </Link>
+    </motion.div>
   );
 }
+
+export default ProductCard;

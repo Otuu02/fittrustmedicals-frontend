@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: 'success' | 'error' | 'warning' | 'info';
-  message: string;
+  message: React.ReactNode; // 🔥 CHANGED: Allow ReactNode instead of just string
   title?: string;
   onClose?: () => void;
   closeable?: boolean;
@@ -20,10 +20,10 @@ export function Alert({
   closeable = true,
   className,
 }: AlertProps) {
-  const [isOpen, ReactSetIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(true);
 
   const handleClose = () => {
-    ReactSetIsOpen(false);
+    setIsOpen(false);
     onClose?.();
   };
 
@@ -74,7 +74,8 @@ export function Alert({
         {title && (
           <h3 className={clsx('font-bold mb-1 text-sm', styles.text)}>{title}</h3>
         )}
-        <p className={clsx('text-sm', styles.text)}>{message}</p>
+        {/* 🔥 FIXED: Use div instead of p to avoid hydration error */}
+        <div className={clsx('text-sm', styles.text)}>{message}</div>
       </div>
 
       {closeable && (

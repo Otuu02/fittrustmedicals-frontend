@@ -1,0 +1,48 @@
+{
+  "users": [
+    {
+      "id": "admin-1",
+      "name": "Super Admin",
+      "email": "admin@fittrust.com",
+      "password": "YWRtaW4xMjM=",
+      "role": "admin",
+      "phone": "+234 800 123 4567",
+      "status": "active",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "user-1775848721024",
+      "name": "Otuu Obinna Gift",
+      "email": "giftotuuobinna1995@gmail.com",
+      "password": "MDcwNjU1ODQ1MDRAT3R1dQ==",
+      "role": "admin",
+      "phone": "07065584504",
+      "status": "active",
+      "createdAt": "2026-04-10T19:18:41.024Z",
+      "updatedAt": "2026-04-10T19:18:41.024Z"
+    },
+    {
+      "id": "user-1775875558262",
+      "name": "Otuu Obinna gift",
+      "email": "gconnectmart@gmail.com",
+      "password": "R2Nvbm5lY3RtYXJ0QDIwMjU=",
+      "role": "customer",
+      "phone": "",
+      "status": "active",
+      "createdAt": "2026-04-11T02:45:58.262Z",
+      "updatedAt": "2026-04-11T02:45:58.262Z"
+    },
+    {
+      "id": "user-1775907756873",
+      "name": "Michael ifeanyi",
+      "email": "michaelorisakwe2764@gmail.com",
+      "password": "TWljaGFlbG9yaXNha3dlQDI3NjQ=",
+      "role": "customer",
+      "phone": "",
+      "status": "active",
+      "createdAt": "2026-04-11T11:42:36.873Z",
+      "updatedAt": "2026-04-11T11:42:36.873Z"
+    }
+  ]
+}

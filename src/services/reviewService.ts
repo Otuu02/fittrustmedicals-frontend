@@ -1,5 +1,15 @@
-import { apiClient } from '@/lib/api';
-import { Review, ApiResponse } from '@/lib/types';
+import apiClient, { ApiResponse } from '@/lib/api';
+
+// Define Review interface locally
+interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export interface CreateReviewRequest {
   productId: string;

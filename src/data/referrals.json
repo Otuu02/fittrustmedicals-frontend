@@ -1,0 +1,15 @@
+{
+  "referrals": {
+    "staff-1": {
+      "code": "FIT-TAFF-1-673410PG65",
+      "staffId": "staff-1",
+      "staffEmail": "staff@fittrust.com",
+      "staffName": "Staff Member",
+      "createdAt": "2026-04-12T18:14:33.410Z",
+      "clicks": 2,
+      "conversions": 0,
+      "revenue": 0,
+      "status": "active"
+    }
+  }
+}

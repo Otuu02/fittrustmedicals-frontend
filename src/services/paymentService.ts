@@ -1,5 +1,4 @@
-import { apiClient } from '@/lib/api';
-import { ApiResponse } from '@/lib/types';
+import apiClient, { ApiResponse } from '@/lib/api';
 
 export interface PaymentRequest {
   orderId: string;

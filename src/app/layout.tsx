@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
-
-const inter = Inter({ subsets: ['latin'] });
+import { BackendStatus } from '@/components/BackendStatus';
+import { Footer } from '@/components/layout/Footer';
+import ClientWrapper from '@/components/layout/ClientWrapper';
 
 export const metadata: Metadata = {
-  title: 'Medical Supplies Store - Quality Equipment & Supplies',
-  description: 'Discover quality medical equipment and supplies',
+  title: 'Fittrustmedicals - Quality Medical Equipment & Supplies',
+  description: 'Discover quality medical equipment and supplies for healthcare professionals',
 };
 
 export default function RootLayout({
@@ -17,9 +17,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="font-sans">
+        <BackendStatus />
         <Header />
         <main>{children}</main>
+        <Footer />
+        <ClientWrapper />
       </body>
     </html>
   );

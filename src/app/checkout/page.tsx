@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
-  const user = useAuthStore((state) => state.user);
+  const customer = useAuthStore((state) => state.customer);
   
   const [isMounted, setIsMounted] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
@@ -42,29 +42,40 @@ export default function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState('standard');
   
   const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: user?.email || '',
-    phone: '',
+    firstName: customer?.name?.split(' ')[0] || '',
+    lastName: customer?.name?.split(' ')[1] || '',
+    email: customer?.email || '',
+    phone: customer?.phone || '',
     street: '',
     city: '',
     state: '',
     postalCode: '',
-    country: '',
+    country: 'Nigeria',
     cardNumber: '',
     expiryDate: '',
     cvv: '',
-    cardholderName: '',
+    cardholderName: customer?.name || '',
   });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  // Calculate totals in Naira
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const shipping = subtotal > 50 ? 0 : (shippingMethod === 'express' ? 20 : 10);
-  const tax = parseFloat((subtotal * 0.1).toFixed(2));
+  const shipping = subtotal > 50000 ? 0 : (shippingMethod === 'express' ? 15000 : 5000);
+  const tax = parseFloat((subtotal * 0.075).toFixed(2)); // 7.5% VAT
   const total = subtotal + shipping + tax;
+
+  // Format price in Naira
+  const formatNaira = (price: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -111,6 +122,7 @@ export default function CheckoutPage() {
         return;
       }
 
+      // Simulate order processing
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       clearCart();
@@ -292,7 +304,7 @@ export default function CheckoutPage() {
                             <div className="flex-1">
                               <p className="font-medium">Standard Shipping (5-7 business days)</p>
                               <p className="text-sm text-gray-600">
-                                {subtotal > 50 ? 'FREE' : '$10.00'}
+                                {subtotal > 50000 ? 'FREE' : formatNaira(5000)}
                               </p>
                             </div>
                           </label>
@@ -307,7 +319,7 @@ export default function CheckoutPage() {
                             />
                             <div className="flex-1">
                               <p className="font-medium">Express Shipping (2-3 business days)</p>
-                              <p className="text-sm text-gray-600">$20.00</p>
+                              <p className="text-sm text-gray-600">{formatNaira(15000)}</p>
                             </div>
                           </label>
                         </div>
@@ -426,7 +438,7 @@ export default function CheckoutPage() {
                       {items.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">
                           <span>{item.name} x {item.quantity}</span>
-                          <span>{formatPrice(item.price * item.quantity)}</span>
+                          <span>{formatNaira(item.price * item.quantity)}</span>
                         </div>
                       ))}
                     </div>
@@ -482,7 +494,7 @@ export default function CheckoutPage() {
                   <div key={item.id} className="text-sm">
                     <div className="flex justify-between">
                       <span>{item.name}</span>
-                      <span className="font-medium">{formatPrice(item.price)}</span>
+                      <span className="font-medium">{formatNaira(item.price)}</span>
                     </div>
                     <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
                   </div>
@@ -492,22 +504,22 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>{formatPrice(subtotal)}</span>
+                  <span>{formatNaira(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
                   <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
-                    {shipping === 0 ? 'FREE' : formatPrice(shipping)}
+                    {shipping === 0 ? 'FREE' : formatNaira(shipping)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tax</span>
-                  <span>{formatPrice(tax)}</span>
+                  <span className="text-gray-600">Tax (7.5% VAT)</span>
+                  <span>{formatNaira(tax)}</span>
                 </div>
 
                 <div className="border-t pt-3 flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-blue-600">{formatPrice(total)}</span>
+                  <span className="text-blue-600">{formatNaira(total)}</span>
                 </div>
               </div>
 

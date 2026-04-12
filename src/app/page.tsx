@@ -1,413 +1,385 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { ProductCard } from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/Button';
-import { Loading } from '@/components/ui/Loading';
-import { Alert } from '@/components/ui/Alert';
-import { Input } from '@/components/ui/Input';
-import { Badge } from '@/components/ui/Badge';
-import { Search, Filter } from 'lucide-react';
-import { PRODUCT_CATEGORIES } from '@/lib/constants';
+import { 
+  ChevronRight, 
+  Truck,
+  Shield,
+  Clock,
+  Percent,
+  Sparkles,
+  Star,
+  Award,
+  Zap,
+  Heart,
+  Stethoscope,
+  Microscope,
+  Activity,
+  ArrowRight,
+  Tag,
+  Gift
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePromotionsStore } from '@/stores/promotionsStore';
+import AnimatedAds from '@/components/home/AnimatedAds';
+import AnimatedFlyerCards from '@/components/home/AnimatedFlyerCards';
+import AnimatedCountdownBanner from '@/components/home/AnimatedCountdownBanner';
 
 interface Product {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
+  category: string;
   description: string;
   image: string;
   stock: number;
-  category: string;
+  status: string;
   rating: number;
-  reviews: number;
+  reviewCount: number;
+  isPromotional?: boolean;
+  discountPercentage?: number;
+  featured?: boolean;
+  campaignCode?: string;
+  campaignName?: string;
 }
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [campaignProducts, setCampaignProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('newest');
-  const [showFilters, setShowFilters] = useState(false);
+  const [activeCampaigns, setActiveCampaigns] = useState<any[]>([]);
+  const { promotions } = usePromotionsStore();
 
-  // Mock products data - Replace with API call later
-  const mockProducts: Product[] = [
-    {
-      id: '1',
-      name: 'Digital Thermometer',
-      price: 29.99,
-      description: 'Fast and accurate temperature reading in seconds',
-      image: '🌡️',
-      stock: 15,
-      category: 'Diagnostics',
-      rating: 4.5,
-      reviews: 128,
-    },
-    {
-      id: '2',
-      name: 'Blood Pressure Monitor',
-      price: 49.99,
-      description: 'Automatic digital BP monitor with LCD display',
-      image: '📊',
-      stock: 8,
-      category: 'Monitoring',
-      rating: 4.8,
-      reviews: 256,
-    },
-    {
-      id: '3',
-      name: 'Pulse Oximeter',
-      price: 39.99,
-      description: 'Portable oxygen saturation monitor',
-      image: '📱',
-      stock: 12,
-      category: 'Monitoring',
-      rating: 4.6,
-      reviews: 192,
-    },
-    {
-      id: '4',
-      name: 'Medical Gloves (100 pack)',
-      price: 19.99,
-      description: 'Latex-free protective gloves for safety',
-      image: '🧤',
-      stock: 50,
-      category: 'Protection',
-      rating: 4.3,
-      reviews: 89,
-    },
-    {
-      id: '5',
-      name: 'First Aid Kit',
-      price: 34.99,
-      description: 'Complete home first aid kit with essentials',
-      image: '🏥',
-      stock: 20,
-      category: 'First Aid',
-      rating: 4.7,
-      reviews: 145,
-    },
-    {
-      id: '6',
-      name: 'Stethoscope',
-      price: 59.99,
-      description: 'Professional dual-head stethoscope',
-      image: '🔊',
-      stock: 5,
-      category: 'Diagnostics',
-      rating: 4.9,
-      reviews: 178,
-    },
-    {
-      id: '7',
-      name: 'Wheelchair',
-      price: 299.99,
-      description: 'Lightweight folding wheelchair',
-      image: '♿',
-      stock: 3,
-      category: 'Mobility',
-      rating: 4.4,
-      reviews: 67,
-    },
-    {
-      id: '8',
-      name: 'Walking Cane',
-      price: 24.99,
-      description: 'Adjustable aluminum walking cane',
-      image: '🎋',
-      stock: 18,
-      category: 'Mobility',
-      rating: 4.2,
-      reviews: 56,
-    },
-    {
-      id: '9',
-      name: 'Oxygen Tank',
-      price: 199.99,
-      description: 'Portable oxygen cylinder with regulator',
-      image: '🔵',
-      stock: 4,
-      category: 'Respiratory',
-      rating: 4.7,
-      reviews: 94,
-    },
-    {
-      id: '10',
-      name: 'Heating Pad',
-      price: 44.99,
-      description: 'Electric heating pad for pain relief',
-      image: '🔥',
-      stock: 11,
-      category: 'First Aid',
-      rating: 4.5,
-      reviews: 123,
-    },
-    {
-      id: '11',
-      name: 'Knee Brace',
-      price: 34.99,
-      description: 'Compression knee support brace',
-      image: '🦵',
-      stock: 22,
-      category: 'Protection',
-      rating: 4.3,
-      reviews: 110,
-    },
-    {
-      id: '12',
-      name: 'Face Mask (50 pack)',
-      price: 14.99,
-      description: '3-ply medical face masks',
-      image: '😷',
-      stock: 100,
-      category: 'Protection',
-      rating: 4.6,
-      reviews: 301,
-    },
-  ];
+  const activePromotions = promotions?.filter(p => 
+    p.displayOnHomepage && 
+    p.isActive && 
+    new Date(p.startDate) <= new Date() && 
+    new Date(p.endDate) >= new Date()
+  ) || [];
 
-  // Load products on mount
   useEffect(() => {
-    const loadProducts = async () => {
+    const fetchProducts = async () => {
       try {
-        setLoading(true);
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setProducts(mockProducts);
-        setError(null);
+        // Fetch all products
+        const response = await fetch('/api/catalog/products');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Invalid response format');
+        }
+        
+        const data = await response.json();
+        
+        let productsData = [];
+        if (data.success && data.products) {
+          productsData = data.products;
+        } else if (Array.isArray(data)) {
+          productsData = data;
+        } else if (data.products) {
+          productsData = data.products;
+        }
+        
+        // Fetch products with active campaigns ONLY
+        const campaignResponse = await fetch('/api/catalog/products-with-campaigns', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (campaignResponse.ok) {
+          const campaignData = await campaignResponse.json();
+          if (campaignData.success && campaignData.products && campaignData.products.length > 0) {
+            setCampaignProducts(campaignData.products);
+            setActiveCampaigns(campaignData.campaigns || []);
+          } else {
+            setCampaignProducts([]);
+            setActiveCampaigns([]);
+          }
+        } else {
+          setCampaignProducts([]);
+          setActiveCampaigns([]);
+        }
+        
+        // Set featured products
+        if (productsData.length > 0) {
+          const featured = productsData.filter((p: Product) => p.featured).slice(0, 8);
+          setFeaturedProducts(featured.length > 0 ? featured : productsData.slice(0, 8));
+        }
       } catch (err) {
-        setError('Failed to load products. Please try again later.');
+        console.error('Error fetching products:', err);
+        setCampaignProducts([]);
+        setActiveCampaigns([]);
       } finally {
         setLoading(false);
       }
     };
-
-    loadProducts();
+    
+    fetchProducts();
   }, []);
 
-  // Filter and sort products
-  useEffect(() => {
-    let filtered = products;
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-NG', { 
+      style: 'currency', 
+      currency: 'NGN', 
+      minimumFractionDigits: 0 
+    }).format(price);
+  };
 
-    // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query)
-      );
-    }
-
-    // Sorting
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'newest':
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredProducts(filtered);
-  }, [products, selectedCategory, searchQuery, sortBy]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full shadow-lg"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Fittrust Medicals
-          </h1>
-          <p className="text-xl text-blue-100 mb-8">
-            Discover quality medical equipment and supplies
-          </p>
+      {/* Announcement Bar */}
+      {activePromotions.length > 0 && (
+        <motion.div 
+          initial={{ y: -50 }}
+          animate={{ y: 0 }}
+          className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-red-500 text-white py-3 text-center text-sm font-medium overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
+          <div className="relative z-10">
+            <Sparkles className="inline-block w-4 h-4 mr-2 animate-pulse" />
+            {activePromotions[0]?.bannerText || `Special Offer: Get ${activePromotions[0]?.value}% OFF!`}
+            <Link href="/products" className="ml-3 inline-flex items-center font-semibold hover:text-yellow-200 transition-colors">
+              Shop Now 
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
-          {/* Search Bar */}
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Search for products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              icon={<Search size={20} />}
-              className="pl-10 bg-white text-gray-900 border-0"
-            />
+      {/* Hero Banner Area */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Main Banner */}
+          <div className="lg:col-span-3 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg overflow-hidden relative h-64 lg:h-80">
+            <div className="absolute inset-0 bg-black/20" />
+            <div className="relative z-10 p-8 text-white">
+              <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm mb-4">Up to 40% Off</span>
+              <h2 className="text-3xl lg:text-4xl font-bold mb-2">Medical Equipment Sale</h2>
+              <p className="text-lg mb-4">Premium quality healthcare supplies</p>
+              <Link href="/products">
+                <button className="bg-white text-blue-600 px-6 py-2 rounded-md font-semibold hover:shadow-lg transition">
+                  Shop Now →
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Side Promos */}
+          <div className="grid grid-cols-2 gap-4">
+            <Link href="/products?category=diagnostic">
+              <div className="bg-blue-500 rounded-lg p-4 text-white text-center hover:opacity-90 transition cursor-pointer">
+                <Stethoscope className="w-8 h-8 mx-auto mb-2" />
+                <div className="font-bold text-sm">Diagnostic Tools</div>
+                <div className="text-xs opacity-90">Up to 30% off</div>
+              </div>
+            </Link>
+            <Link href="/products?category=ppe">
+              <div className="bg-green-500 rounded-lg p-4 text-white text-center hover:opacity-90 transition cursor-pointer">
+                <Shield className="w-8 h-8 mx-auto mb-2" />
+                <div className="font-bold text-sm">PPE Supplies</div>
+                <div className="text-xs opacity-90">Up to 25% off</div>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {error && (
-          <Alert type="error" message={error} onClose={() => setError(null)} />
-        )}
+      {/* Animated Ads Carousel - NEW */}
+      <div className="container mx-auto px-4">
+        <AnimatedAds />
+      </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar - Filters */}
-          <div className="lg:w-64 flex-shrink-0">
-            <div className="sticky top-20">
-              {/* Filter Toggle for Mobile */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden w-full mb-4 flex items-center justify-center gap-2 bg-white p-3 rounded-lg border"
-              >
-                <Filter size={20} />
-                Filters
-              </button>
+      {/* Animated Flyer Cards - NEW */}
+      <div className="container mx-auto px-4">
+        <AnimatedFlyerCards />
+      </div>
 
-              {/* Filters Container */}
-              <div
-                className={`space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}
-              >
-                {/* Category Filter */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h3 className="font-bold text-lg mb-4">Categories</h3>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setSelectedCategory('all')}
-                      className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                        selectedCategory === 'all'
-                          ? 'bg-blue-600 text-white'
-                          : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      All Products
-                    </button>
-                    {PRODUCT_CATEGORIES.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                          selectedCategory === category
-                            ? 'bg-blue-600 text-white'
-                            : 'hover:bg-gray-100'
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+      {/* Animated Countdown Banner - NEW */}
+      <div className="container mx-auto px-4">
+        <AnimatedCountdownBanner />
+      </div>
 
-                {/* Sort Filter */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h3 className="font-bold text-lg mb-4">Sort By</h3>
-                  <div className="space-y-2">
-                    {[
-                      { value: 'newest', label: 'Newest' },
-                      { value: 'price-low', label: 'Price: Low to High' },
-                      { value: 'price-high', label: 'Price: High to Low' },
-                      { value: 'rating', label: 'Highest Rated' },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setSortBy(option.value)}
-                        className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                          sortBy === option.value
-                            ? 'bg-blue-600 text-white'
-                            : 'hover:bg-gray-100'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Price Range - Optional */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h3 className="font-bold text-lg mb-4">Filters</h3>
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600">
-                      Products available: <span className="font-bold">{filteredProducts.length}</span>
-                    </p>
-                  </div>
-                </div>
+      {/* Flash Sales Section */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-red-500 text-white px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              <h2 className="font-bold text-lg">FLASH SALES</h2>
+              <div className="flex gap-1 ml-4">
+                <div className="bg-black/30 px-2 py-1 rounded text-sm font-mono">02</div>
+                <span>:</span>
+                <div className="bg-black/30 px-2 py-1 rounded text-sm font-mono">15</div>
+                <span>:</span>
+                <div className="bg-black/30 px-2 py-1 rounded text-sm font-mono">42</div>
               </div>
             </div>
+            <Link href="/products?filter=flash-sales" className="text-sm hover:underline">View All &gt;</Link>
           </div>
-
-          {/* Products Grid */}
-          <div className="flex-1">
-            {/* Results Info */}
-            <div className="mb-6 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {selectedCategory === 'all'
-                  ? 'All Products'
-                  : selectedCategory}
-              </h2>
-              <span className="text-gray-600">
-                Showing {filteredProducts.length} products
-              </span>
+          <div className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {featuredProducts.slice(0, 6).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Loading State */}
-            {loading && <Loading />}
+      {/* Featured Medical Equipment Section */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-blue-600" />
+              <h2 className="font-bold text-lg text-gray-800">Featured Medical Equipment</h2>
+            </div>
+            <Link href="/products" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
+              See All <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {featuredProducts.slice(0, 6).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-            {/* No Results */}
-            {!loading && filteredProducts.length === 0 && (
-              <div className="text-center py-16">
-                <p className="text-xl text-gray-600 mb-4">
-                  No products found matching your criteria
+      {/* Diagnostic & Lab Equipment Section */}
+      <section className="container mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="px-6 py-3 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Microscope className="w-5 h-5 text-purple-600" />
+              <h2 className="font-bold text-lg text-gray-800">Diagnostic & Lab Equipment</h2>
+            </div>
+            <Link href="/products?category=diagnostic" className="text-blue-600 text-sm hover:underline flex items-center gap-1">
+              See All <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {featuredProducts.slice(3, 9).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Special Offer Banner - ONLY SHOWS WHEN THERE ARE ACTIVE CAMPAIGNS */}
+      {campaignProducts.length > 0 ? (
+        <section className="container mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg overflow-hidden">
+            <div className="px-6 py-4">
+              <div className="flex items-center gap-2">
+                <Tag className="w-6 h-6 text-yellow-300" />
+                <h2 className="text-white font-bold text-xl">Special Offer | Limited Time</h2>
+              </div>
+              <p className="text-blue-100 text-sm mt-1">Get up to 50% off on selected medical supplies</p>
+              {activeCampaigns.length > 0 && activeCampaigns[0]?.code && (
+                <p className="text-yellow-200 text-xs mt-2 font-medium">
+                  ✨ Use code: {activeCampaigns[0].code} at checkout
                 </p>
-                <Button
-                  onClick={() => {
-                    setSelectedCategory('all');
-                    setSearchQuery('');
-                  }}
-                >
-                  View All Products
-                </Button>
-              </div>
-            )}
-
-            {/* Products Grid */}
-            {!loading && filteredProducts.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddSuccess={() => {
-                      // You can add a toast notification here
-                      console.log(`${product.name} added to cart!`);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 p-6 pt-2">
+              {campaignProducts.map((product) => (
+                <div key={product.id} className="bg-white rounded-lg p-4 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="relative">
+                    <img 
+                      src={product.image || '/placeholder.svg'} 
+                      alt={product.name} 
+                      className="w-full h-28 object-contain mb-2"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder.svg';
+                      }}
+                    />
+                    {product.discountPercentage && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        -{product.discountPercentage}%
+                      </span>
+                    )}
+                    {product.campaignCode && (
+                      <span className="absolute bottom-0 left-0 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        {product.campaignCode}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xs font-medium text-gray-800 mb-1 line-clamp-2 h-10">{product.name}</h3>
+                  <div className="text-base font-bold text-blue-600">{formatPrice(product.price)}</div>
+                  {product.originalPrice && (
+                    <div className="text-xs text-gray-400 line-through">
+                      {formatPrice(product.originalPrice)}
+                    </div>
+                  )}
+                  <Link href={`/product/${product.id}`}>
+                    <button className="mt-2 w-full bg-blue-600 text-white py-1.5 rounded-md text-xs font-semibold hover:bg-blue-700 transition-all">
+                      Shop Now →
+                    </button>
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
+      ) : (
+        /* Empty State - No Campaigns Active */
+        <section className="container mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg overflow-hidden">
+            <div className="px-6 py-12 text-center">
+              <Gift className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-600 mb-2">No Active Campaigns</h2>
+              <p className="text-gray-500 text-sm">
+                Check back soon for special offers and discounts!
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* Bottom CTA Section */}
-      {!loading && filteredProducts.length > 0 && (
-        <div className="bg-blue-600 text-white py-12 mt-12">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4">Special Offers Available</h2>
-            <p className="text-xl text-blue-100 mb-8">
-              Get quality medical supplies at competitive prices
-            </p>
-            <Button variant="secondary" size="lg">
-              View Deals
+      {/* Newsletter Section */}
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold mb-2">Subscribe to Our Newsletter</h2>
+          <p className="text-blue-100 mb-6">Get the latest updates on new products and special offers</p>
+          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <input 
+              type="email" 
+              placeholder="Enter your email address"
+              className="flex-1 px-4 py-2 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+            <Button className="bg-blue-700 hover:bg-blue-800 px-6">
+              Subscribe
+              <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
         </div>
-      )}
+      </section>
     </div>
   );
 }

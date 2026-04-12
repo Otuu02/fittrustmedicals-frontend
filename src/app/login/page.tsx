@@ -1,110 +1,169 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Alert } from '@/components/ui/Alert';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
+  const { login, isAuthenticated, isAdmin, isStaff, _hasHydrated } = useAuthStore();
   
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@fittrust.com');
+  const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Redirect if already logged in (wait for hydration first)
+  useEffect(() => {
+    if (!_hasHydrated) return;
+    
+    if (isAuthenticated) {
+      if (isAdmin && redirectTo.startsWith('/admin')) {
+        router.push('/admin');
+      } else if (isStaff) {
+        router.push('/staff-dashboard');
+      } else {
+        router.push(redirectTo === '/admin' ? '/' : redirectTo);
+      }
+    }
+  }, [isAuthenticated, isAdmin, isStaff, _hasHydrated, redirectTo, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
-    try {
-      // Mock API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock validation (Replace with your actual API call)
-      if (email && password) {
-        // Simulating a successful login
-        const mockUser = { id: '1', name: 'John Doe', email: email, role: 'customer' as const };
-        const mockToken = 'mock-jwt-token-123';
-        
-        login(mockUser, mockToken);
-        router.push('/account'); // Redirect to profile/account page
+    const success = await login(email, password);
+    
+    if (success) {
+      // Redirect based on role (handled by useEffect above, but immediate for snappiness)
+      if (email === 'admin@fittrust.com') {
+        router.push('/admin');
+      } else if (email === 'staff@fittrust.com') {
+        router.push('/staff-dashboard');
       } else {
-        throw new Error('Please fill in all fields');
+        router.push(redirectTo === '/admin' ? '/' : redirectTo);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to login');
-    } finally {
+    } else {
+      setError('Invalid email or password');
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-            create a new account
-          </Link>
-        </p>
+  // Show loading while hydrating
+  if (!_hasHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
+    );
+  }
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
-          {error && <Alert type="error" message={error} className="mb-4" />}
-          
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <Input
-              label="Email address"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
+  return (
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10 border border-gray-200">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{' '}
+            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              create a new account
+            </Link>
+          </p>
+        </div>
 
-            <Input
-              label="Password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
+            {error && (
+              <Alert type="error" message={error} className="mb-4" onClose={() => setError('')} />
+            )}
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <Input
+                  label="Email address"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
               </div>
 
-              <div className="text-sm">
-                <Link href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot your password?
-                </Link>
+              <div>
+                <Input
+                  label="Password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                    Remember me
+                  </label>
+                </div>
+
+                <div className="text-sm">
+                  <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                    Forgot your password?
+                  </Link>
+                </div>
+              </div>
+
+              <Button type="submit" fullWidth isLoading={loading} disabled={!email || !password}>
+                Sign in
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                <strong className="text-blue-600">Admin Login:</strong>
+              </p>
+              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm">
+                  <span className="font-medium">Email:</span>{' '}
+                  <code className="bg-gray-100 px-1 rounded">admin@fittrust.com</code>
+                </p>
+                <p className="text-sm mt-1">
+                  <span className="font-medium">Password:</span>{' '}
+                  <code className="bg-gray-100 px-1 rounded">admin123</code>
+                </p>
+              </div>
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm">
+                  <span className="font-medium">Staff Login:</span>{' '}
+                  <code className="bg-gray-100 px-1 rounded">staff@fittrust.com</code> / <code className="bg-gray-100 px-1 rounded">staff123</code>
+                </p>
               </div>
             </div>
-
-            <Button type="submit" fullWidth isLoading={loading}>
-              Sign in
-            </Button>
-          </form>
+          </div>
         </div>
       </div>
     </div>

@@ -17,6 +17,16 @@ export interface User {
   role: 'customer' | 'admin';
 }
 
+export interface Address {
+  id?: string;
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  isDefault?: boolean;
+}
+
 export interface Order {
   id: string;
   userId: string;
