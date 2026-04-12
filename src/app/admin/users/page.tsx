@@ -207,8 +207,8 @@ export default function AdminUsersPage() {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     No users found
-                  </td>
-                </tr>
+                   </td>
+                 </tr>
               ) : (
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
@@ -238,7 +238,7 @@ export default function AdminUsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge 
                         label={user.status === 'active' ? 'Active' : 'Banned'}
-                        variant={user.status === 'active' ? 'success' : 'error'}
+                        variant={user.status === 'active' ? 'success' : 'danger'}
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
