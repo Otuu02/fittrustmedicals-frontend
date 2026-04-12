@@ -15,10 +15,11 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
-  // FIXED: Changed 'user' to 'customer'
-  const { customer, isLoading, _hasHydrated, wallet, orders, getFinancialMetrics } = useAuthStore();
+  // FIXED: Remove 'isLoading' - it doesn't exist in your store
+  const { customer, _hasHydrated, wallet, orders, getFinancialMetrics } = useAuthStore();
 
-  if (!_hasHydrated || isLoading) {
+  // Use _hasHydrated to check if store is ready
+  if (!_hasHydrated) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -26,7 +27,21 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const metrics = getFinancialMetrics('daily');
+  // Check if user is admin
+  if (!customer || customer.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Access Denied</p>
+          <Link href="/" className="text-blue-600 hover:underline">
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const metrics = getFinancialMetrics?.('daily') || { monthlyRevenue: 0 };
   
   // Calculate today's earnings
   const today = new Date().toISOString().split('T')[0];
