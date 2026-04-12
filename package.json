@@ -1,8 +1,8 @@
 {
   "name": "fittrustmedicals",
   "version": "1.0.0",
-  "description": "Fittrustmedicals - Medical E-commerce Platform",
   "private": true,
+  "description": "Fittrustmedicals - Medical E-commerce Platform",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
