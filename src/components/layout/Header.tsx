@@ -162,9 +162,11 @@ export function Header() {
                   </div>
                 )}
               </div>
-              <div className="relative" ref={countryRef}>
+              <div className="relative country-selector" ref={countryRef}>
                 <button onClick={() => setCountryDropdownOpen(!countryDropdownOpen)} className="hover:text-blue-200 flex items-center gap-1">
-                  <span>{selectedCountry.flag}</span> {selectedCountry.name} <ChevronDown className="w-3 h-3" />
+                  <span>{selectedCountry.flag}</span> 
+                  <span className="location-text">{selectedCountry.name}</span> 
+                  <ChevronDown className="w-3 h-3" />
                 </button>
                 {countryDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border max-h-80 overflow-y-auto">

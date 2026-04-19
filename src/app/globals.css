@@ -5,12 +5,16 @@
 @layer base {
   body {
     @apply bg-white text-gray-900;
+    overflow-x: hidden;
+    width: 100%;
   }
   
   /* Better font rendering */
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    width: 100%;
   }
   
   /* Smooth scrolling */
@@ -29,9 +33,9 @@
     @apply px-3 sm:px-4 md:px-6 lg:px-8 mx-auto;
   }
   
-  /* Responsive grid */
+  /* Responsive grid - FIXED for mobile */
   .grid-responsive {
-    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6;
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6;
   }
   
   /* Card styles */
@@ -55,7 +59,7 @@
 }
 
 /* ============================================
-   MOBILE RESPONSIVE UTILITIES
+   MOBILE RESPONSIVE UTILITIES - FIXED
    ============================================ */
 
 /* Extra small devices (phones, 480px and up) */
@@ -69,131 +73,281 @@
   .xs\:hidden {
     display: none;
   }
-}
-
-/* Extra small devices (phones, 480px and down) */
-@media (max-width: 480px) {
-  .xs\:text-sm {
-    font-size: 0.875rem;
-  }
-  .xs\:text-xs {
-    font-size: 0.75rem;
-  }
-  .xs\:p-2 {
-    padding: 0.5rem;
-  }
-  .xs\:gap-1 {
-    gap: 0.25rem;
+  .xs\:flex {
+    display: flex;
   }
 }
 
-/* Small devices (phones, 640px and down) */
+/* Small devices (phones, 640px and down) - MAIN FIXES */
 @media (max-width: 640px) {
+  /* Container fixes */
   .container-custom {
     @apply px-3;
   }
   
-  /* Stack flex layouts on mobile */
-  .flex-col-mobile {
-    flex-direction: column;
+  /* Product card fixes */
+  .product-card {
+    @apply p-2;
   }
   
-  /* Full width buttons on mobile */
-  .btn-full-mobile {
-    width: 100%;
+  .product-card .product-image-container {
+    aspect-ratio: 1 / 1;
   }
   
-  /* Hide elements on mobile */
-  .hidden-mobile {
-    display: none;
+  .product-card .product-title {
+    font-size: 0.75rem;
+    line-height: 1.2;
   }
   
-  /* Show elements only on mobile */
-  .block-mobile {
-    display: block;
-  }
-  
-  /* Smaller text on mobile */
-  .text-mobile-sm {
+  .product-card .product-price {
     font-size: 0.875rem;
   }
   
-  /* Reduce spacing on mobile */
-  .space-mobile-sm {
+  /* Flash sale timer fixes */
+  .flash-sale-timer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 0.5rem;
   }
   
-  /* Cards stack on mobile */
-  .card-mobile-stack {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-/* Touch-friendly tap targets for mobile */
-@media (max-width: 768px) {
-  button, 
-  a,
-  [role="button"],
-  .tap-target {
-    min-height: 44px;
-    min-width: 44px;
+  .timer-unit {
+    min-width: 60px;
+    text-align: center;
+    padding: 0.5rem;
+    background: #f3f4f6;
+    border-radius: 0.5rem;
   }
   
-  /* Prevent text zoom on input focus (iOS fix) */
-  input, 
-  select, 
-  textarea {
-    font-size: 16px !important;
+  /* Hero section fixes */
+  .hero-section {
+    padding: 1rem;
   }
   
-  /* Larger touch targets for icons */
-  .icon-button {
-    padding: 10px;
+  .hero-title {
+    font-size: 1.25rem;
   }
   
-  /* Improve scrolling on mobile */
-  .overflow-auto, 
-  .overflow-y-auto,
-  .overflow-x-auto {
-    -webkit-overflow-scrolling: touch;
+  /* Fix for chat button - make it visible */
+  .chat-button {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 50;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    background-color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
   
-  /* Better modal on mobile */
-  .modal-mobile {
-    width: calc(100% - 2rem);
-    margin: 1rem;
-    max-height: calc(100% - 2rem);
-  }
-  
-  /* Full width dropdowns on mobile */
-  .dropdown-mobile {
-    width: 100%;
+  /* Ensure dropdowns are visible */
+  .dropdown-content {
+    position: fixed;
     left: 0;
     right: 0;
+    margin: 0 auto;
+    width: calc(100% - 2rem);
+    max-width: 300px;
   }
 }
 
-/* Tablets (768px to 1024px) */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .tablet\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* ============================================
+   FLASH SALE TIMER - FIXED for mobile
+   ============================================ */
+
+.flash-sale-container {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 1rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.timer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.timer-box {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.timer-number {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #dc2626;
+  line-height: 1.2;
+}
+
+.timer-label {
+  font-size: 0.6rem;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .timer-number {
+    font-size: 1.5rem;
   }
-  .tablet\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .tablet\:hidden {
-    display: none;
+  .timer-label {
+    font-size: 0.7rem;
   }
 }
 
-/* Desktop (1024px and up) */
+/* ============================================
+   CHAT BUTTON - Always visible
+   ============================================ */
+
+.chat-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.chat-toggle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.chat-toggle:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 640px) {
+  .chat-toggle {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* ============================================
+   PRODUCT GRID - Fixed for mobile
+   ============================================ */
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  padding: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+}
+
 @media (min-width: 1024px) {
-  .desktop\:block {
-    display: block;
+  .products-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem;
   }
-  .desktop\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* ============================================
+   PRODUCT CARD - Fixed for mobile
+   ============================================ */
+
+.product-card {
+  background: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  object-fit: contain;
+  padding: 0.75rem;
+  background: #f9fafb;
+}
+
+.product-info {
+  padding: 0.5rem;
+}
+
+.product-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-price {
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #dc2626;
+}
+
+.product-original-price {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+  margin-left: 0.25rem;
+}
+
+.product-stock {
+  font-size: 0.65rem;
+  color: #10b981;
+}
+
+/* ============================================
+   LOCATION SELECTOR - Prevent cutoff
+   ============================================ */
+
+.location-wrapper {
+  max-width: 120px;
+  overflow: visible;
+}
+
+.location-text {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .location-text {
+    font-size: 0.65rem;
+    max-width: 80px;
   }
 }
 
@@ -356,64 +510,6 @@
 }
 
 /* ============================================
-   PRODUCT CARD RESPONSIVE & IMAGE FIXES
-   ============================================ */
-
-/* Fix for product images being cut off */
-.product-image-container {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background-color: #f3f4f6;
-}
-
-.product-image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
-
-/* Fix for Next.js Image component with fill */
-.relative img,
-.relative span img {
-  object-fit: contain !important;
-  object-position: center !important;
-}
-
-/* Ensure images don't get cut off in cards */
-.aspect-square img,
-.aspect-square span img {
-  object-fit: contain !important;
-  padding: 0.5rem;
-}
-
-@media (max-width: 480px) {
-  .product-card {
-    @apply p-2;
-  }
-  .product-card .product-image-container {
-    aspect-ratio: 1 / 1;
-  }
-  .product-card .product-title {
-    @apply text-xs;
-  }
-  .product-card .product-price {
-    @apply text-sm;
-  }
-}
-
-@media (min-width: 481px) and (max-width: 768px) {
-  .product-card {
-    @apply p-3;
-  }
-  .product-card .product-image-container {
-    aspect-ratio: 1 / 1;
-  }
-}
-
-/* ============================================
    MODAL RESPONSIVE
    ============================================ */
 
@@ -447,6 +543,83 @@
     display: block;
     width: 100%;
   }
+}
+
+/* ============================================
+   CHAT BUTTON FIX - Make it visible on mobile
+   ============================================ */
+
+.fixed-chat-button {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  z-index: 999;
+}
+
+@media (max-width: 640px) {
+  .fixed-chat-button {
+    bottom: 70px;
+    right: 12px;
+  }
+}
+
+/* Location selector - prevent cutoff */
+.country-selector {
+  max-width: 100px;
+  overflow: visible !important;
+}
+
+.country-selector button span {
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .country-selector {
+    max-width: 70px;
+  }
+  .country-selector button span:last-child {
+    display: none;
+  }
+}
+
+/* ============================================
+   PRODUCT CARD IMAGE FIXES
+   ============================================ */
+
+/* Fix for product images being cut off */
+.product-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #f3f4f6;
+}
+
+.product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Fix for Next.js Image component with fill */
+.relative img,
+.relative span img {
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+/* Ensure images don't get cut off in cards */
+.aspect-square img,
+.aspect-square span img {
+  object-fit: contain !important;
+  padding: 0.5rem;
+}
+
+/* Force all images to be contained */
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* ============================================
