@@ -13,7 +13,6 @@ import {
   LogOut,
   Heart,
   ChevronDown,
-  Check,
   Menu,
   X
 } from 'lucide-react';
@@ -23,42 +22,15 @@ const calculateCartCount = (items: any[]) => {
   return items.reduce((total, item) => total + (item.quantity || 1), 0);
 };
 
-// List of countries
-const countries = [
-  { code: 'NG', name: 'Nigeria', currency: '₦', flag: '🇳🇬' },
-  { code: 'GH', name: 'Ghana', currency: '₵', flag: '🇬🇭' },
-  { code: 'KE', name: 'Kenya', currency: 'KSh', flag: '🇰🇪' },
-  { code: 'ZA', name: 'South Africa', currency: 'R', flag: '🇿🇦' },
-  { code: 'EG', name: 'Egypt', currency: 'E£', flag: '🇪🇬' },
-  { code: 'US', name: 'United States', currency: '$', flag: '🇺🇸' },
-  { code: 'UK', name: 'United Kingdom', currency: '£', flag: '🇬🇧' },
-];
-
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
-  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('selectedCountry');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    }
-    return countries.find(c => c.code === 'NG') || countries[0];
-  });
 
-  // Refs for dropdowns to detect outside clicks
-  const categoriesRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
-  const helpRef = useRef<HTMLDivElement>(null);
-  const countryRef = useRef<HTMLDivElement>(null);
 
   const { customer, isAuthenticated, logout } = useAuthStore();
   const { items } = useCartStore();
@@ -67,31 +39,16 @@ export function Header() {
     setIsClient(true);
   }, []);
 
-  // Close dropdowns when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
-        setCategoriesOpen(false);
-      }
       if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
         setAccountDropdownOpen(false);
       }
-      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
-        setHelpOpen(false);
-      }
-      if (countryRef.current && !countryRef.current.contains(event.target as Node)) {
-        setCountryDropdownOpen(false);
-      }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  // Save selected country to localStorage
-  useEffect(() => {
-    localStorage.setItem('selectedCountry', JSON.stringify(selectedCountry));
-  }, [selectedCountry]);
 
   const cartItemCount = isClient ? calculateCartCount(items) : 0;
 
@@ -131,161 +88,110 @@ export function Header() {
     }
   };
 
-  const handleCountrySelect = (country: typeof countries[0]) => {
-    setSelectedCountry(country);
-    setCountryDropdownOpen(false);
-  };
-
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm w-full overflow-x-hidden">
-      {/* TOP BAR - Hidden on mobile, visible on tablet+ */}
-      <div className="hidden md:block bg-blue-700 text-white text-xs">
-        <div className="max-w-7xl mx-auto px-4 py-1.5">
-          <div className="flex justify-between items-center">
-            <div className="flex gap-6">
-              <Link href="/sell" className="hover:text-blue-200">Sell on Fittrust</Link>
-              <Link href="/partner" className="hover:text-blue-200">Partner Hub</Link>
-              <Link href="/payment-shipping" className="hover:text-blue-200">Payment & Shipping</Link>
-              <Link href="/contact" className="hover:text-blue-200">Contact Us</Link>
-            </div>
-            <div className="flex gap-6">
-              <div className="relative" ref={helpRef}>
-                <button onClick={() => setHelpOpen(!helpOpen)} className="hover:text-blue-200 flex items-center gap-1">
-                  Help <ChevronDown className="w-3 h-3" />
-                </button>
-                {helpOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
-                    <Link href="/faq" onClick={() => setHelpOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">FAQ</Link>
-                    <Link href="/returns" onClick={() => setHelpOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Returns Policy</Link>
-                    <Link href="/shipping" onClick={() => setHelpOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Shipping Info</Link>
-                    <Link href="/support" onClick={() => setHelpOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Support Center</Link>
-                  </div>
-                )}
-              </div>
-              <div className="relative country-selector" ref={countryRef}>
-                <button onClick={() => setCountryDropdownOpen(!countryDropdownOpen)} className="hover:text-blue-200 flex items-center gap-1">
-                  <span>{selectedCountry.flag}</span> 
-                  <span className="location-text">{selectedCountry.name}</span> 
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-                {countryDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border max-h-80 overflow-y-auto">
-                    {countries.map((country) => (
-                      <button key={country.code} onClick={() => handleCountrySelect(country)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                        <span className="flex items-center gap-2"><span>{country.flag}</span> <span>{country.name}</span></span>
-                        {selectedCountry.code === country.code && <Check className="w-4 h-4 text-blue-600" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* MAIN HEADER - COMPACT like Jumia on mobile with fixed spacing */}
-      <div className="bg-white border-b border-gray-100">
+    <header className="sticky top-0 z-50 bg-white shadow-sm w-full">
+      {/* Simple Header - Like Jumia (No top bar on mobile) */}
+      <div className="bg-white">
         <div className="px-3 py-2">
-          {/* Row: Logo + Search + Icons (compact with proper spacing) */}
           <div className="flex items-center justify-between gap-2">
             {/* Hamburger Menu - Mobile only */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 flex-shrink-0"
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 flex-shrink-0"
             >
-              <Menu size={20} />
+              <Menu size={22} />
             </button>
 
-            {/* Logo - FIXED: Always shows text on mobile */}
+            {/* Logo + Name - Simple like Jumia */}
             <Link href="/" className="flex-shrink-0">
-              <div className="flex items-center gap-1.5">
-                <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12">
+              <div className="flex items-center gap-2">
+                <div className="relative w-8 h-8 sm:w-9 sm:h-9">
                   <Image
                     src="/images/logo.png"
                     alt="Fittrust Medicals"
                     fill
-                    sizes="(max-width: 768px) 32px, 48px"
+                    sizes="32px"
                     className="object-contain"
                     priority
                   />
                 </div>
-                {/* Text always visible - removed hidden-xs class */}
-                <div className="flex flex-col">
-                  <h1 className="text-[9px] sm:text-xs md:text-sm font-bold text-blue-600 tracking-tight leading-tight whitespace-nowrap">
-                    FITTRUST MEDICALS
-                  </h1>
-                  <p className="text-[6px] sm:text-[8px] md:text-[10px] text-gray-500 leading-tight whitespace-nowrap">
-                    Healthcare Supplies
-                  </p>
-                </div>
+                <span className="text-xs sm:text-sm font-bold text-blue-600 whitespace-nowrap">
+                  FITTRUST
+                </span>
               </div>
             </Link>
 
-            {/* Search Bar - Compact on mobile with search icon inside */}
-            <div className="flex-1 min-w-0 max-w-[45%] sm:max-w-none">
+            {/* Search Bar - Clean, no overlap */}
+            <div className="flex-1 max-w-[50%] sm:max-w-md">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-2 py-1.5 sm:py-2 pl-7 pr-7 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs sm:text-sm bg-gray-50"
+                  className="w-full px-3 py-2 pl-9 pr-14 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
                 />
                 <Search 
-                  size={12} 
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={15} 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium hover:bg-blue-700 transition"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-700 transition"
                 >
                   Go
                 </button>
               </form>
             </div>
 
-            {/* Icons Row - Compact */}
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              {/* User Icon */}
-              <div className="relative">
+            {/* Icons - Cart + Account (like Jumia) */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {/* Account Icon */}
+              <div className="relative" ref={accountRef}>
                 <button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100"
+                  className="p-2 rounded-lg hover:bg-gray-100"
                 >
-                  <User size={16} className="sm:w-5 sm:h-5" />
+                  <User size={20} />
                 </button>
                 {accountDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
                     {isAuthenticated ? (
                       <>
-                        <Link href="/account" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Account</Link>
-                        <Link href="/orders" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
-                        <Link href="/wishlist" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Wishlist</Link>
+                        <Link href="/account" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          My Account
+                        </Link>
+                        <Link href="/orders" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          My Orders
+                        </Link>
+                        <Link href="/wishlist" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          Wishlist
+                        </Link>
                         <hr className="my-1" />
-                        <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
+                        <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                          Logout
+                        </button>
                       </>
                     ) : (
                       <>
-                        <Link href="/login" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Sign In</Link>
-                        <Link href="/register" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Create Account</Link>
+                        <Link href="/login" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          Sign In
+                        </Link>
+                        <Link href="/register" onClick={() => setAccountDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                          Create Account
+                        </Link>
                       </>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Wishlist */}
-              <Link href="/wishlist" className="p-1.5 rounded-lg hover:bg-gray-100">
-                <Heart size={16} className="sm:w-5 sm:h-5" />
-              </Link>
-
               {/* Cart */}
-              <Link href="/cart" className="relative p-1.5 rounded-lg hover:bg-gray-100">
-                <ShoppingCart size={16} className="sm:w-5 sm:h-5" />
+              <Link href="/cart" className="relative p-2 rounded-lg hover:bg-gray-100">
+                <ShoppingCart size={20} />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-1">
-                    {cartItemCount > 9 ? '9+' : cartItemCount}
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
                   </span>
                 )}
               </Link>
@@ -294,46 +200,24 @@ export function Header() {
         </div>
       </div>
 
-      {/* CATEGORY BAR - Scrollable horizontal like Jumia */}
-      <div className="bg-white border-b border-gray-200">
+      {/* Category Navigation - Simple horizontal scroll (visible on all screens) */}
+      <div className="bg-white border-t border-b border-gray-100">
         <div className="px-3">
-          <div className="flex items-center gap-1 overflow-x-auto py-1.5 scrollbar-hide">
-            {/* Categories Button */}
-            <div className="relative flex-shrink-0" ref={categoriesRef}>
-              <button
-                onClick={() => setCategoriesOpen(!categoriesOpen)}
-                className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-md text-xs font-medium whitespace-nowrap hover:bg-blue-700 transition"
-              >
-                <Menu size={12} />
-                <span className="hidden sm:inline">All </span>Categories
-                <ChevronDown size={10} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {categoriesOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border z-50 max-h-80 overflow-y-auto">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.name}
-                      href={cat.href}
-                      onClick={() => setCategoriesOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 border-b last:border-0 transition"
-                    >
-                      <span>{cat.icon}</span>
-                      <span>{cat.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Nav Links - Horizontal scroll */}
+          <div className="flex items-center gap-2 overflow-x-auto py-2 scrollbar-hide">
+            <button
+              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-full text-xs font-medium whitespace-nowrap"
+            >
+              <Menu size={14} />
+              All Categories
+            </button>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-2 py-1 text-[11px] sm:text-xs rounded-md whitespace-nowrap font-medium flex-shrink-0 ${
+                className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap font-medium ${
                   pathname === link.href
                     ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-blue-600'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
                 }`}
               >
                 {link.label}
@@ -343,7 +227,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* MOBILE SIDEBAR MENU (slide-out drawer) */}
+      {/* MOBILE SIDEBAR MENU - Contains all the extra links (Sell, Partner, Help, Country, etc.) */}
       {mobileMenuOpen && (
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setMobileMenuOpen(false)} />
@@ -380,9 +264,20 @@ export function Header() {
                 </div>
               )}
 
+              {/* Sell on Fittrust & Partner Hub - moved to dropdown */}
+              <div className="pt-2">
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">For Sellers</h3>
+                <Link href="/sell" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Sell on Fittrust
+                </Link>
+                <Link href="/partner" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Partner Hub
+                </Link>
+              </div>
+
               {/* Categories */}
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2 text-sm">Categories</h3>
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">Shop by Category</h3>
                 <div className="space-y-1">
                   {categories.map((cat) => (
                     <Link
@@ -398,7 +293,7 @@ export function Header() {
                 </div>
               </div>
 
-              {/* Navigation */}
+              {/* Quick Links */}
               <div>
                 <h3 className="font-semibold text-gray-800 mb-2 text-sm">Quick Links</h3>
                 {navLinks.map((link) => (
@@ -413,12 +308,18 @@ export function Header() {
                 ))}
               </div>
 
-              {/* Footer links */}
+              {/* Support & Help */}
               <div className="pt-3 border-t">
-                <Link href="/sell" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600">Sell on Fittrust</Link>
-                <Link href="/partner" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600">Partner Hub</Link>
-                <Link href="/payment-shipping" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600">Payment & Shipping</Link>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600">Contact Us</Link>
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">Support</h3>
+                <Link href="/payment-shipping" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Payment & Shipping
+                </Link>
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Contact Us
+                </Link>
+                <Link href="/faq" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Help & FAQ
+                </Link>
               </div>
             </div>
           </div>
