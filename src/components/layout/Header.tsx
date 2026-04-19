@@ -197,47 +197,50 @@ export function Header() {
               <Menu size={20} />
             </button>
 
-            {/* Logo - Smaller on mobile */}
+            {/* Logo - FIXED: Always shows text on mobile */}
             <Link href="/" className="flex-shrink-0">
               <div className="flex items-center gap-1.5">
-                <div className="relative w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10">
+                <div className="relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12">
                   <Image
                     src="/images/logo.png"
                     alt="Fittrust Medicals"
                     fill
-                    sizes="(max-width: 768px) 28px, 40px"
+                    sizes="(max-width: 768px) 32px, 48px"
                     className="object-contain"
                     priority
                   />
                 </div>
-                <div className="hidden xs:block">
-                  <h1 className="text-xs sm:text-sm font-bold text-blue-600 tracking-tight leading-tight">
+                {/* Text always visible - removed hidden-xs class */}
+                <div className="flex flex-col">
+                  <h1 className="text-[9px] sm:text-xs md:text-sm font-bold text-blue-600 tracking-tight leading-tight whitespace-nowrap">
                     FITTRUST MEDICALS
                   </h1>
-                  <p className="text-[8px] text-gray-500 leading-none">Healthcare Supplies</p>
+                  <p className="text-[6px] sm:text-[8px] md:text-[10px] text-gray-500 leading-tight whitespace-nowrap">
+                    Healthcare Supplies
+                  </p>
                 </div>
               </div>
             </Link>
 
             {/* Search Bar - Compact on mobile with search icon inside */}
-            <div className="flex-1 min-w-0 max-w-[50%] sm:max-w-none">
+            <div className="flex-1 min-w-0 max-w-[45%] sm:max-w-none">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-1.5 sm:py-2 pl-8 pr-8 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
+                  className="w-full px-2 py-1.5 sm:py-2 pl-7 pr-7 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs sm:text-sm bg-gray-50"
                 />
                 <Search 
-                  size={14} 
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={12} 
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium hover:bg-blue-700 transition"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium hover:bg-blue-700 transition"
                 >
-                  Search
+                  Go
                 </button>
               </form>
             </div>
@@ -250,7 +253,7 @@ export function Header() {
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="p-1.5 rounded-lg hover:bg-gray-100"
                 >
-                  <User size={18} className="sm:w-5 sm:h-5" />
+                  <User size={16} className="sm:w-5 sm:h-5" />
                 </button>
                 {accountDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
@@ -274,14 +277,14 @@ export function Header() {
 
               {/* Wishlist */}
               <Link href="/wishlist" className="p-1.5 rounded-lg hover:bg-gray-100">
-                <Heart size={18} className="sm:w-5 sm:h-5" />
+                <Heart size={16} className="sm:w-5 sm:h-5" />
               </Link>
 
               {/* Cart */}
               <Link href="/cart" className="relative p-1.5 rounded-lg hover:bg-gray-100">
-                <ShoppingCart size={18} className="sm:w-5 sm:h-5" />
+                <ShoppingCart size={16} className="sm:w-5 sm:h-5" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-1">
                     {cartItemCount > 9 ? '9+' : cartItemCount}
                   </span>
                 )}
@@ -295,14 +298,14 @@ export function Header() {
       <div className="bg-white border-b border-gray-200">
         <div className="px-3">
           <div className="flex items-center gap-1 overflow-x-auto py-1.5 scrollbar-hide">
-            {/* Categories Button - FIXED: Now clickable */}
+            {/* Categories Button */}
             <div className="relative flex-shrink-0" ref={categoriesRef}>
               <button
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
                 className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-md text-xs font-medium whitespace-nowrap hover:bg-blue-700 transition"
               >
                 <Menu size={12} />
-                All Categories
+                <span className="hidden sm:inline">All </span>Categories
                 <ChevronDown size={10} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </button>
               {categoriesOpen && (
@@ -327,7 +330,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-2 py-1 text-xs rounded-md whitespace-nowrap font-medium flex-shrink-0 ${
+                className={`px-2 py-1 text-[11px] sm:text-xs rounded-md whitespace-nowrap font-medium flex-shrink-0 ${
                   pathname === link.href
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-600 hover:text-blue-600'
