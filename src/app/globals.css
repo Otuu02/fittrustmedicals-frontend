@@ -58,14 +58,21 @@
    MOBILE RESPONSIVE UTILITIES
    ============================================ */
 
-/* Extra small devices (phones, 480px and down) */
-@media (max-width: 480px) {
+/* Extra small devices (phones, 480px and up) */
+@media (min-width: 480px) {
   .xs\:block {
     display: block;
+  }
+  .xs\:inline {
+    display: inline;
   }
   .xs\:hidden {
     display: none;
   }
+}
+
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
   .xs\:text-sm {
     font-size: 0.875rem;
   }
@@ -411,6 +418,7 @@
     width: 100%;
   }
 }
+
 /* ============================================
    FORCE ALL FEATURES VISIBLE ON MOBILE
    ============================================ */
@@ -451,11 +459,6 @@
     min-height: 44px;
     padding-top: 8px;
     padding-bottom: 8px;
-  }
-  
-  /* Stack dropdowns full width on mobile */
-  .absolute {
-    position: relative !important;
   }
 }
 
