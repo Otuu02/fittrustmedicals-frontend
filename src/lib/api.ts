@@ -6,7 +6,7 @@ import axios, { AxiosResponse } from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const DEBUG_MODE = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
 
-// Create axios instance with enhanced configuration
+// Create axios instance for API calls (with /api prefix for backend routes)
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api`,
   timeout: 10000,
@@ -17,9 +17,9 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Health check client
+// Create health check client (without /api prefix - health endpoint is at root)
 const healthClient = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL,  // ← FIXED: Removed /api from baseURL
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -296,10 +296,23 @@ export const apiMethods = {
     }
   },
 
+  // ✅ FIXED: Health check endpoint - now correctly calls /health without /api prefix
   health: {
     check: async (): Promise<ApiResponse> => {
-      const response = await healthClient.get('/health');
-      return response.data;
+      try {
+        // healthClient now has baseURL = http://localhost:3001 (no /api)
+        const response = await healthClient.get('/health');
+        return response.data;
+      } catch (error) {
+        console.error('Health check failed:', error);
+        // Return a fallback response instead of throwing
+        return {
+          success: false,
+          status: 'error',
+          message: 'Backend connection failed',
+          timestamp: new Date().toISOString()
+        };
+      }
     }
   }
 };

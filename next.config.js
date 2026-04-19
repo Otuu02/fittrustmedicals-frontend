@@ -25,10 +25,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Allow production builds to complete even with ESLint errors
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // REMOVED: eslint configuration moved to .eslintrc.json
   
   env: {
     NEXT_PUBLIC_APP_NAME: 'Fittrust Medicals',

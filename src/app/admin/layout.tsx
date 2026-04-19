@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +22,9 @@ import {
   BarChart3,
   Receipt,
   AlertTriangle,
-  Wallet
+  Wallet,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -51,16 +53,38 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
   const { isAuthenticated, isAdmin, logout, _hasHydrated, getInventoryAlerts, getUnreadCount, wallet } = useAuthStore();
 
   const inventoryAlertCount = getInventoryAlerts().filter(a => a.status === 'low' || a.status === 'out').length;
   const unreadCount = getUnreadCount();
+
+  // Check if mobile on mount and on resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (_hasHydrated && (!isAuthenticated || !isAdmin)) {
       router.push('/login?redirect=/admin');
     }
   }, [isAuthenticated, isAdmin, _hasHydrated, router]);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   if (!_hasHydrated || !isAuthenticated || !isAdmin) {
     return (
@@ -73,139 +97,207 @@ export default function AdminLayout({
   const handleLogout = () => {
     logout();
     router.push('/');
+    setMobileMenuOpen(false);
   };
+
+  // Sidebar content component (reused for both mobile and desktop)
+  const SidebarContent = () => (
+    <>
+      {/* Sidebar Header */}
+      <div className="p-4 sm:p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        <div className="flex items-center space-x-3">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="bg-white/20 p-2 rounded-xl backdrop-blur-sm"
+          >
+            <LayoutDashboard className="w-5 h-5 sm:w-7 sm:h-7" />
+          </motion.div>
+          <div>
+            <h2 className="font-bold text-base sm:text-xl">Fittrustmedicals</h2>
+            <p className="text-[10px] sm:text-xs text-blue-200 font-medium">Admin Console</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4 sm:py-6 px-2 sm:px-4 space-y-1">
+        {sidebarItems.map((item, index) => {
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const Icon = item.icon;
+          
+          return (
+            <motion.div
+              key={item.href}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <Link 
+                href={item.href}
+                className={`flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200 group ${
+                  isActive 
+                    ? `bg-${item.color}-50 text-${item.color}-600 shadow-sm` 
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:scale-110 ${isActive ? 'scale-110' : ''}`} />
+                  <span className="font-medium text-sm sm:text-base">{item.label}</span>
+                </div>
+                {item.label === 'Inventory' && inventoryAlertCount > 0 && (
+                  <span className="bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
+                    {inventoryAlertCount}
+                  </span>
+                )}
+                {item.label === 'Wallet & Payments' && wallet?.pendingWithdrawals > 0 && (
+                  <span className="bg-yellow-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
+                    Pending
+                  </span>
+                )}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeIndicator"
+                    className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-${item.color}-500`}
+                  />
+                )}
+              </Link>
+            </motion.div>
+          );
+        })}
+      </nav>
+
+      {/* Footer Links */}
+      <div className="p-3 sm:p-4 border-t border-gray-100 space-y-1 sm:space-y-2">
+        <Link 
+          href="/"
+          className="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+          <Store className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="font-medium text-sm sm:text-base">View Store</span>
+          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-auto" />
+        </Link>
+        
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
+        >
+          <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="font-medium text-sm sm:text-base">Logout</span>
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white shadow-xl flex flex-col z-20">
-        <div className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
-          <div className="flex items-center space-x-3">
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="bg-white/20 p-2 rounded-xl backdrop-blur-sm"
-            >
-              <LayoutDashboard className="w-7 h-7" />
-            </motion.div>
-            <div>
-              <h2 className="font-bold text-xl">Fittrustmedicals</h2>
-              <p className="text-xs text-blue-200 font-medium">Admin Console</p>
-            </div>
-          </div>
-        </div>
-        
-        <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-          {sidebarItems.map((item, index) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
-            
-            return (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Link 
-                  href={item.href}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
-                    isActive 
-                      ? `bg-${item.color}-50 text-${item.color}-600 shadow-sm` 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon className={`w-5 h-5 transition-transform group-hover:scale-110 ${isActive ? 'scale-110' : ''}`} />
-                    <span className="font-medium">{item.label}</span>
-                  </div>
-                  {item.label === 'Inventory' && inventoryAlertCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {inventoryAlertCount}
-                    </span>
-                  )}
-                  {item.label === 'Wallet & Payments' && wallet.pendingWithdrawals > 0 && (
-                    <span className="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      Pending
-                    </span>
-                  )}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className={`w-1.5 h-1.5 rounded-full bg-${item.color}-500`}
-                    />
-                  )}
-                </Link>
-              </motion.div>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-gray-100 space-y-2">
-          <Link 
-            href="/"
-            className="flex items-center space-x-3 px-4 py-3 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors"
-          >
-            <Store className="w-5 h-5" />
-            <span className="font-medium">View Store</span>
-            <ChevronRight className="w-4 h-4 ml-auto" />
-          </Link>
-          
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
+      {/* Desktop Sidebar - hidden on mobile */}
+      <aside className={`hidden lg:flex lg:w-64 xl:w-72 bg-white shadow-xl flex-col z-20 transition-all duration-300`}>
+        <SidebarContent />
       </aside>
+
+      {/* Mobile Sidebar - slide out menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            />
+            
+            {/* Slide out menu */}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+              className="fixed left-0 top-0 bottom-0 w-72 bg-white shadow-xl flex flex-col z-50 lg:hidden"
+            >
+              <div className="p-4 border-b border-gray-100 flex justify-end">
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <SidebarContent />
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white shadow-sm px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {sidebarItems.find(item => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label || 'Dashboard'}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+        {/* Mobile Header - with hamburger menu */}
+        <header className="bg-white shadow-sm px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <Menu className="w-5 h-5 text-gray-600" />
+            </button>
+            
+            <div className="lg:hidden">
+              <h2 className="font-bold text-blue-600 text-sm">Fittrustmedicals</h2>
+              <p className="text-[10px] text-gray-500">Admin</p>
+            </div>
+            
+            <div className="hidden lg:block">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                {sidebarItems.find(item => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label || 'Dashboard'}
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Mobile Title (shows current page) */}
+            <div className="lg:hidden text-right">
+              <h1 className="text-sm font-semibold text-gray-800">
+                {sidebarItems.find(item => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label || 'Dashboard'}
+              </h1>
+              <p className="text-[10px] text-gray-500">
+                {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+            </div>
+
+            {/* Wallet Balance - hidden on very small screens */}
             <Link 
               href="/admin/wallet"
-              className="flex items-center space-x-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
+              className="hidden xs:flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
             >
-              <Wallet className="w-4 h-4" />
-              <span className="font-medium">₦{wallet.balance.toLocaleString()}</span>
+              <Wallet className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="font-medium text-xs sm:text-sm">₦{(wallet?.balance || 0).toLocaleString()}</span>
             </Link>
             
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors"
-            >
-              <Store className="w-4 h-4" />
-              <span>View Public Store</span>
-            </Link>
-            
+            {/* Bell Icon */}
             <button className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors">
-              <Bell className="w-6 h-6" />
+              <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+                <span className="absolute top-0 right-0 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center animate-pulse">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
             
-            <div className="flex items-center space-x-3 pl-6 border-l">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+            {/* Admin Avatar - hidden text on mobile */}
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-6 border-l border-gray-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg text-sm sm:text-base">
                 A
               </div>
-              <div className="hidden md:block">
-                <p className="font-medium text-gray-800">Administrator</p>
+              <div className="hidden sm:block">
+                <p className="font-medium text-gray-800 text-sm">Administrator</p>
                 <p className="text-xs text-gray-500">admin@fittrust.com</p>
               </div>
             </div>
@@ -213,7 +305,7 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 lg:p-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

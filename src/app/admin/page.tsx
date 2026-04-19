@@ -92,96 +92,115 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {customer?.name || 'Administrator'}!</h1>
-        <p className="text-blue-100">Here's what's happening with your store today.</p>
+    <div className="space-y-4 sm:space-y-6 md:space-y-8 px-2 sm:px-0">
+      {/* Welcome Section - Mobile Friendly */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 break-words">
+          Welcome back, {customer?.name?.split(' ')[0] || 'Administrator'}!
+        </h1>
+        <p className="text-xs sm:text-sm text-blue-100">Here's what's happening with your store today.</p>
       </div>
 
-      {/* Wallet Balance Card */}
-      <Link href="/admin/wallet" className="block bg-gradient-to-r from-emerald-500 to-emerald-700 rounded-2xl p-8 text-white shadow-lg hover:shadow-xl transition-shadow">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-emerald-100 text-sm font-medium mb-1">Available Wallet Balance</p>
-            <p className="text-4xl font-bold">₦{(wallet?.balance || 0).toLocaleString()}</p>
-            <p className="text-emerald-200 text-sm mt-2">
+      {/* Wallet Balance Card - Mobile Friendly */}
+      <Link href="/admin/wallet" className="block bg-gradient-to-r from-emerald-500 to-emerald-700 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-white shadow-lg hover:shadow-xl transition-shadow">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+          <div className="flex-1">
+            <p className="text-emerald-100 text-xs sm:text-sm font-medium mb-1">Available Wallet Balance</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl font-bold break-words">₦{(wallet?.balance || 0).toLocaleString()}</p>
+            <p className="text-emerald-200 text-xs sm:text-sm mt-1 sm:mt-2">
               +₦{todayEarnings.toLocaleString()} earned today
             </p>
           </div>
-          <div className="p-4 bg-white/20 rounded-xl backdrop-blur-sm">
-            <Wallet className="w-12 h-12 text-white" />
+          <div className="hidden sm:block p-3 md:p-4 bg-white/20 rounded-xl backdrop-blur-sm self-start">
+            <Wallet className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
           </div>
         </div>
-        <div className="flex items-center mt-6 space-x-6">
-          <div>
+        
+        {/* Wallet Stats - Stack on mobile, row on tablet */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:space-x-6 mt-4 sm:mt-6 pt-3 sm:pt-0 border-t border-emerald-400/30 sm:border-t-0">
+          <div className="flex justify-between sm:block">
             <p className="text-emerald-200 text-xs">Total Earned</p>
-            <p className="text-xl font-semibold">₦{(wallet?.totalEarned || 0).toLocaleString()}</p>
+            <p className="text-base sm:text-xl font-semibold">₦{(wallet?.totalEarned || 0).toLocaleString()}</p>
           </div>
-          <div>
+          <div className="flex justify-between sm:block">
             <p className="text-emerald-200 text-xs">Total Withdrawn</p>
-            <p className="text-xl font-semibold">₦{(wallet?.totalWithdrawn || 0).toLocaleString()}</p>
+            <p className="text-base sm:text-xl font-semibold">₦{(wallet?.totalWithdrawn || 0).toLocaleString()}</p>
           </div>
-          <div>
+          <div className="flex justify-between sm:block">
             <p className="text-emerald-200 text-xs">Pending Withdrawals</p>
-            <p className="text-xl font-semibold">₦{(wallet?.pendingWithdrawals || 0).toLocaleString()}</p>
+            <p className="text-base sm:text-xl font-semibold">₦{(wallet?.pendingWithdrawals || 0).toLocaleString()}</p>
           </div>
         </div>
       </Link>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Grid - Responsive: 1 col mobile, 2 cols tablet, 4 cols desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           const TrendIcon = stat.trendUp ? ArrowUpRight : ArrowDownRight;
           
+          // Dynamic color classes - using inline styles for Tailwind dynamic colors
+          const bgColorClass = {
+            blue: 'bg-blue-50',
+            green: 'bg-green-50',
+            purple: 'bg-purple-50',
+            orange: 'bg-orange-50'
+          }[stat.color];
+          
+          const textColorClass = {
+            blue: 'text-blue-600',
+            green: 'text-green-600',
+            purple: 'text-purple-600',
+            orange: 'text-orange-600'
+          }[stat.color];
+          
           return (
-            <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-3 rounded-lg bg-${stat.color}-50`}>
-                  <Icon className={`w-6 h-6 text-${stat.color}-600`} />
+            <div key={index} className="bg-white rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-5 md:p-6 border border-gray-100 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className={`p-2 sm:p-3 rounded-lg ${bgColorClass}`}>
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${textColorClass}`} />
                 </div>
-                <div className={`flex items-center text-sm ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
-                  <TrendIcon className="w-4 h-4 mr-1" />
+                <div className={`flex items-center text-xs sm:text-sm ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
+                  <TrendIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
                   {stat.trend}
                 </div>
               </div>
-              <h3 className="text-gray-500 text-sm font-medium">{stat.title}</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+              <h3 className="text-gray-500 text-xs sm:text-sm font-medium">{stat.title}</h3>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mt-0.5 sm:mt-1 break-words">{stat.value}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions - Responsive: 1 col mobile, 3 cols desktop */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <Link 
                 key={index}
                 href={action.href}
-                className={`${action.color} text-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group`}
+                className={`${action.color} text-white p-4 sm:p-5 md:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-between group`}
               >
-                <div className="flex items-center space-x-3">
-                  <Icon className="w-6 h-6" />
-                  <span className="font-semibold text-lg">{action.label}</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="font-semibold text-sm sm:text-base md:text-lg">{action.label}</span>
                 </div>
-                <ArrowUpRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
             );
           })}
         </div>
       </div>
 
-      {/* Recent Activity Placeholder */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="text-center py-12 text-gray-500">
-          <p>No recent activity to display.</p>
-          <p className="text-sm mt-1">Activity will appear here as orders come in.</p>
+      {/* Recent Activity Placeholder - Mobile Friendly */}
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Recent Activity</h2>
+        <div className="text-center py-8 sm:py-12 text-gray-500">
+          <p className="text-sm sm:text-base">No recent activity to display.</p>
+          <p className="text-xs sm:text-sm mt-1">Activity will appear here as orders come in.</p>
         </div>
       </div>
     </div>
