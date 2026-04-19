@@ -99,7 +99,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm w-full">
-      {/* Main Header - Like Temu/Jumia */}
+      {/* Main Header */}
       <div className="bg-white">
         <div className="px-3 py-2">
           <div className="flex items-center justify-between gap-2">
@@ -125,43 +125,43 @@ export function Header() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs sm:text-sm font-bold text-blue-600 whitespace-nowrap">
+                  <span className="text-[10px] sm:text-sm font-bold text-blue-600 whitespace-nowrap">
                     FITTRUST MEDICALS
                   </span>
-                  <span className="text-[8px] sm:text-[9px] text-gray-500 whitespace-nowrap">
+                  <span className="text-[7px] sm:text-[9px] text-gray-500 whitespace-nowrap">
                     Healthcare Supplies
                   </span>
                 </div>
               </div>
             </Link>
 
-            {/* Search Bar - Clean */}
-            <div className="flex-1 max-w-[45%] sm:max-w-md">
+            {/* Search Bar */}
+            <div className="flex-1 max-w-[40%] sm:max-w-md">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-2 pl-9 pr-14 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
+                  className="w-full px-2 py-1.5 sm:py-2 pl-7 pr-12 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs sm:text-sm bg-gray-50"
                 />
                 <Search 
-                  size={15} 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={13} 
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-blue-700 transition"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium hover:bg-blue-700 transition"
                 >
                   Go
                 </button>
               </form>
             </div>
 
-            {/* Icons - Cart + Account */}
+            {/* Icons Row - Login + Cart (BOTH visible on mobile) */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              {/* Account Icon */}
-              <div className="relative" ref={accountRef}>
+              {/* User/Login Icon - ALWAYS VISIBLE on mobile */}
+              <div className="relative">
                 <button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                   className="p-2 rounded-lg hover:bg-gray-100"
@@ -200,8 +200,12 @@ export function Header() {
                 )}
               </div>
 
-              {/* Cart */}
-              <Link href="/cart" className="relative p-2 rounded-lg hover:bg-gray-100">
+              {/* Cart - ALWAYS VISIBLE */}
+              <Link 
+                href="/cart" 
+                className="relative p-2 rounded-lg hover:bg-gray-100"
+                aria-label="Shopping cart"
+              >
                 <ShoppingCart size={20} />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
@@ -214,7 +218,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* Category Navigation - Like Temu (NO ICONS) */}
+      {/* Category Navigation */}
       <div className="bg-white border-t border-gray-100">
         <div className="px-3">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
@@ -235,7 +239,7 @@ export function Header() {
                       key={cat.name}
                       href={cat.href}
                       onClick={() => setCategoriesOpen(false)}
-                      className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b last:border-0 transition"
+                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b last:border-0 transition"
                     >
                       {cat.name}
                     </Link>
@@ -244,7 +248,7 @@ export function Header() {
               )}
             </div>
 
-            {/* Main Categories - Direct links (NO ICONS) */}
+            {/* Main Categories */}
             {mainCategories.map((category) => (
               <Link
                 key={category.name}
