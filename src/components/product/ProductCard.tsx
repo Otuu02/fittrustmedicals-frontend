@@ -94,16 +94,17 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
       className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
     >
       <Link href={`/products/${product.id}`}>
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        {/* Fixed image container - prevents cutting off */}
+        <div className="relative aspect-square w-full overflow-hidden bg-gray-100 product-image-container">
           <SafeImage
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500"
             fallback={getValidImageUrl(null, product.category)}
           />
           
           {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
             {product.isPromotional && showDiscount && product.discountPercentage && (
               <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
                 -{product.discountPercentage}%
@@ -119,7 +120,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
           {/* Wishlist Button */}
           <button 
             onClick={handleWishlist}
-            className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${
+            className={`absolute top-3 right-3 p-2 rounded-full transition-colors z-10 ${
               inWishlist 
                 ? 'bg-red-500 text-white' 
                 : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500'
@@ -132,7 +133,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
           <button 
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10"
           >
             <ShoppingCart className="w-5 h-5" />
           </button>
@@ -158,7 +159,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
           </p>
 
           {/* Price Section */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-1">
             <div>
               <span className="text-xl font-bold text-gray-800">
                 {formatPrice(product.price)}

@@ -137,7 +137,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 bg-white shadow-sm w-full overflow-x-hidden">
       {/* TOP BAR - Hidden on mobile, visible on tablet+ */}
       <div className="hidden md:block bg-blue-700 text-white text-xs">
         <div className="max-w-7xl mx-auto px-4 py-1.5">
@@ -182,15 +182,15 @@ export function Header() {
         </div>
       </div>
 
-      {/* MAIN HEADER - COMPACT like Jumia on mobile */}
+      {/* MAIN HEADER - COMPACT like Jumia on mobile with fixed spacing */}
       <div className="bg-white border-b border-gray-100">
-        <div className="px-3 sm:px-4 py-2 sm:py-3">
-          {/* Row: Logo + Search + Icons (compact) */}
-          <div className="flex items-center gap-2">
+        <div className="px-3 py-2">
+          {/* Row: Logo + Search + Icons (compact with proper spacing) */}
+          <div className="flex items-center justify-between gap-2">
             {/* Hamburger Menu - Mobile only */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100"
+              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 flex-shrink-0"
             >
               <Menu size={20} />
             </button>
@@ -217,19 +217,23 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Search Bar - Compact on mobile */}
-            <div className="flex-1">
+            {/* Search Bar - Compact on mobile with search icon inside */}
+            <div className="flex-1 min-w-0 max-w-[50%] sm:max-w-none">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-1.5 sm:py-2 pr-16 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
+                  className="w-full px-3 py-1.5 sm:py-2 pl-8 pr-8 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
+                />
+                <Search 
+                  size={14} 
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1 top-0.5 sm:top-1 bg-blue-600 text-white px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium hover:bg-blue-700 transition"
                 >
                   Search
                 </button>
@@ -237,7 +241,7 @@ export function Header() {
             </div>
 
             {/* Icons Row - Compact */}
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {/* User Icon */}
               <div className="relative">
                 <button
@@ -289,15 +293,15 @@ export function Header() {
       <div className="bg-white border-b border-gray-200">
         <div className="px-3">
           <div className="flex items-center gap-1 overflow-x-auto py-1.5 scrollbar-hide">
-            {/* Categories Button */}
-            <div className="relative">
+            {/* Categories Button - FIXED: Now clickable */}
+            <div className="relative flex-shrink-0" ref={categoriesRef}>
               <button
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
-                className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-md text-xs font-medium whitespace-nowrap"
+                className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded-md text-xs font-medium whitespace-nowrap hover:bg-blue-700 transition"
               >
                 <Menu size={12} />
                 All Categories
-                <ChevronDown size={10} />
+                <ChevronDown size={10} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </button>
               {categoriesOpen && (
                 <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border z-50 max-h-80 overflow-y-auto">
@@ -306,7 +310,7 @@ export function Header() {
                       key={cat.name}
                       href={cat.href}
                       onClick={() => setCategoriesOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 border-b last:border-0"
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 border-b last:border-0 transition"
                     >
                       <span>{cat.icon}</span>
                       <span>{cat.name}</span>
@@ -321,7 +325,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-2 py-1 text-xs rounded-md whitespace-nowrap font-medium ${
+                className={`px-2 py-1 text-xs rounded-md whitespace-nowrap font-medium flex-shrink-0 ${
                   pathname === link.href
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-600 hover:text-blue-600'
