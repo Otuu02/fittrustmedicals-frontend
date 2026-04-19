@@ -14,8 +14,9 @@ export default function LoginPage() {
   const redirectTo = searchParams.get('redirect') || '/';
   const { login, isAuthenticated, isAdmin, isStaff, _hasHydrated } = useAuthStore();
   
-  const [email, setEmail] = useState('admin@fittrust.com');
-  const [password, setPassword] = useState('admin123');
+  // REMOVED default credentials - now empty
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -48,14 +49,8 @@ export default function LoginPage() {
     const success = await login(email, password);
     
     if (success) {
-      // Redirect based on role (handled by useEffect above, but immediate for snappiness)
-      if (email === 'admin@fittrust.com') {
-        router.push('/admin');
-      } else if (email === 'staff@fittrust.com') {
-        router.push('/staff-dashboard');
-      } else {
-        router.push(redirectTo === '/admin' ? '/' : redirectTo);
-      }
+      // Redirect based on role
+      router.push(redirectTo === '/admin' ? '/admin' : redirectTo);
     } else {
       setError('Invalid email or password');
       setLoading(false);
@@ -142,27 +137,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                <strong className="text-blue-600">Admin Login:</strong>
-              </p>
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm">
-                  <span className="font-medium">Email:</span>{' '}
-                  <code className="bg-gray-100 px-1 rounded">admin@fittrust.com</code>
-                </p>
-                <p className="text-sm mt-1">
-                  <span className="font-medium">Password:</span>{' '}
-                  <code className="bg-gray-100 px-1 rounded">admin123</code>
-                </p>
-              </div>
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm">
-                  <span className="font-medium">Staff Login:</span>{' '}
-                  <code className="bg-gray-100 px-1 rounded">staff@fittrust.com</code> / <code className="bg-gray-100 px-1 rounded">staff123</code>
-                </p>
-              </div>
-            </div>
+            {/* REMOVED - No more visible credentials shown here */}
           </div>
         </div>
       </div>
