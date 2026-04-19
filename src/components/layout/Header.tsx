@@ -29,8 +29,10 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const accountRef = useRef<HTMLDivElement>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const { customer, isAuthenticated, logout } = useAuthStore();
   const { items } = useCartStore();
@@ -39,11 +41,14 @@ export function Header() {
     setIsClient(true);
   }, []);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
         setAccountDropdownOpen(false);
+      }
+      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
+        setCategoriesOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -52,24 +57,28 @@ export function Header() {
 
   const cartItemCount = isClient ? calculateCartCount(items) : 0;
 
-  const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/products', label: 'Products' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
+  // Categories to display directly in header (like Temu) - NO ICONS
+  const mainCategories = [
+    { name: 'Diagnostic Equipment', href: '/products?category=diagnostic' },
+    { name: 'Surgical Supplies', href: '/products?category=surgical' },
+    { name: 'PPE & Safety', href: '/products?category=ppe' },
+    { name: 'Lab Equipment', href: '/products?category=lab' },
+    { name: 'First Aid', href: '/products?category=first-aid' },
+    { name: 'Hospital Furniture', href: '/products?category=furniture' },
+    { name: 'Pharmaceuticals', href: '/products?category=pharma' },
   ];
 
-  const categories = [
-    { name: 'Diagnostic Equipment', href: '/products?category=diagnostic', icon: '🔬' },
-    { name: 'Surgical Supplies', href: '/products?category=surgical', icon: '🩺' },
-    { name: 'Patient Monitoring', href: '/products?category=monitoring', icon: '📊' },
-    { name: 'PPE & Safety', href: '/products?category=ppe', icon: '🛡️' },
-    { name: 'First Aid', href: '/products?category=first-aid', icon: '🩹' },
-    { name: 'Lab Equipment', href: '/products?category=lab', icon: '🧪' },
-    { name: 'Mobility Aids', href: '/products?category=mobility', icon: '🦽' },
-    { name: 'Hospital Furniture', href: '/products?category=furniture', icon: '🛏️' },
-    { name: 'Pharmaceuticals', href: '/products?category=pharma', icon: '💊' },
-    { name: 'Dental Equipment', href: '/products?category=dental', icon: '🦷' },
+  const allCategories = [
+    { name: 'Diagnostic Equipment', href: '/products?category=diagnostic' },
+    { name: 'Surgical Supplies', href: '/products?category=surgical' },
+    { name: 'Patient Monitoring', href: '/products?category=monitoring' },
+    { name: 'PPE & Safety', href: '/products?category=ppe' },
+    { name: 'First Aid', href: '/products?category=first-aid' },
+    { name: 'Lab Equipment', href: '/products?category=lab' },
+    { name: 'Mobility Aids', href: '/products?category=mobility' },
+    { name: 'Hospital Furniture', href: '/products?category=furniture' },
+    { name: 'Pharmaceuticals', href: '/products?category=pharma' },
+    { name: 'Dental Equipment', href: '/products?category=dental' },
   ];
 
   const handleLogout = async () => {
@@ -90,7 +99,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm w-full">
-      {/* Simple Header - Like Jumia (No top bar on mobile) */}
+      {/* Main Header - Like Temu/Jumia */}
       <div className="bg-white">
         <div className="px-3 py-2">
           <div className="flex items-center justify-between gap-2">
@@ -102,10 +111,10 @@ export function Header() {
               <Menu size={22} />
             </button>
 
-            {/* Logo + Name - Simple like Jumia */}
+            {/* Logo + Full Name + Subheading */}
             <Link href="/" className="flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="relative w-8 h-8 sm:w-9 sm:h-9">
+                <div className="relative w-8 h-8 sm:w-10 sm:h-10">
                   <Image
                     src="/images/logo.png"
                     alt="Fittrust Medicals"
@@ -115,14 +124,19 @@ export function Header() {
                     priority
                   />
                 </div>
-                <span className="text-xs sm:text-sm font-bold text-blue-600 whitespace-nowrap">
-                  FITTRUST
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xs sm:text-sm font-bold text-blue-600 whitespace-nowrap">
+                    FITTRUST MEDICALS
+                  </span>
+                  <span className="text-[8px] sm:text-[9px] text-gray-500 whitespace-nowrap">
+                    Healthcare Supplies
+                  </span>
+                </div>
               </div>
             </Link>
 
-            {/* Search Bar - Clean, no overlap */}
-            <div className="flex-1 max-w-[50%] sm:max-w-md">
+            {/* Search Bar - Clean */}
+            <div className="flex-1 max-w-[45%] sm:max-w-md">
               <form onSubmit={handleSearch} className="relative">
                 <input
                   type="text"
@@ -144,7 +158,7 @@ export function Header() {
               </form>
             </div>
 
-            {/* Icons - Cart + Account (like Jumia) */}
+            {/* Icons - Cart + Account */}
             <div className="flex items-center gap-1 flex-shrink-0">
               {/* Account Icon */}
               <div className="relative" ref={accountRef}>
@@ -200,34 +214,51 @@ export function Header() {
         </div>
       </div>
 
-      {/* Category Navigation - Simple horizontal scroll (visible on all screens) */}
-      <div className="bg-white border-t border-b border-gray-100">
+      {/* Category Navigation - Like Temu (NO ICONS) */}
+      <div className="bg-white border-t border-gray-100">
         <div className="px-3">
-          <div className="flex items-center gap-2 overflow-x-auto py-2 scrollbar-hide">
-            <button
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-full text-xs font-medium whitespace-nowrap"
-            >
-              <Menu size={14} />
-              All Categories
-            </button>
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap font-medium ${
-                  pathname === link.href
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                }`}
+          <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
+            {/* All Categories Dropdown Button */}
+            <div className="relative flex-shrink-0" ref={categoriesRef}>
+              <button
+                onClick={() => setCategoriesOpen(!categoriesOpen)}
+                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-full text-xs font-medium whitespace-nowrap hover:bg-blue-700 transition"
               >
-                {link.label}
+                <Menu size={14} />
+                All Categories
+                <ChevronDown size={12} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {categoriesOpen && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-50 max-h-96 overflow-y-auto">
+                  {allCategories.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      href={cat.href}
+                      onClick={() => setCategoriesOpen(false)}
+                      className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b last:border-0 transition"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Main Categories - Direct links (NO ICONS) */}
+            {mainCategories.map((category) => (
+              <Link
+                key={category.name}
+                href={category.href}
+                className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-full whitespace-nowrap transition"
+              >
+                {category.name}
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      {/* MOBILE SIDEBAR MENU - Contains all the extra links (Sell, Partner, Help, Country, etc.) */}
+      {/* MOBILE SIDEBAR MENU */}
       {mobileMenuOpen && (
         <>
           <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setMobileMenuOpen(false)} />
@@ -264,8 +295,39 @@ export function Header() {
                 </div>
               )}
 
-              {/* Sell on Fittrust & Partner Hub - moved to dropdown */}
-              <div className="pt-2">
+              {/* All Categories in Mobile Menu */}
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">All Categories</h3>
+                <div className="space-y-1">
+                  {allCategories.map((cat) => (
+                    <Link
+                      key={cat.name}
+                      href={cat.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Links */}
+              <div className="pt-3 border-t">
+                <h3 className="font-semibold text-gray-800 mb-2 text-sm">Quick Links</h3>
+                <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Home
+                </Link>
+                <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  About Us
+                </Link>
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
+                  Contact
+                </Link>
+              </div>
+
+              {/* Seller Links */}
+              <div className="pt-3 border-t">
                 <h3 className="font-semibold text-gray-800 mb-2 text-sm">For Sellers</h3>
                 <Link href="/sell" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
                   Sell on Fittrust
@@ -275,47 +337,11 @@ export function Header() {
                 </Link>
               </div>
 
-              {/* Categories */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-2 text-sm">Shop by Category</h3>
-                <div className="space-y-1">
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.name}
-                      href={cat.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-2 px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg"
-                    >
-                      <span>{cat.icon}</span>
-                      <span>{cat.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Links */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-2 text-sm">Quick Links</h3>
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-
-              {/* Support & Help */}
+              {/* Support */}
               <div className="pt-3 border-t">
                 <h3 className="font-semibold text-gray-800 mb-2 text-sm">Support</h3>
                 <Link href="/payment-shipping" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
                   Payment & Shipping
-                </Link>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
-                  Contact Us
                 </Link>
                 <Link href="/faq" onClick={() => setMobileMenuOpen(false)} className="block px-2 py-2 text-sm text-gray-600 hover:text-blue-600 rounded-lg">
                   Help & FAQ
