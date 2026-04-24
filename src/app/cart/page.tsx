@@ -7,6 +7,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import PaystackButton from '@/components/payment/PaystackButton';
 
 export default function CartPage() {
   const router = useRouter();
@@ -38,6 +39,15 @@ export default function CartPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Optional: Add any additional logic after successful payment
+    console.log('Payment completed successfully!');
+  };
+
+  const handlePaymentClose = () => {
+    console.log('Payment modal closed');
   };
 
   if (!isMounted) {
@@ -185,17 +195,21 @@ export default function CartPage() {
                 <span className="text-blue-600">{formatNaira(grandTotal)}</span>
               </div>
               
-              <Link href="/checkout">
-                <Button fullWidth size="lg">
-                  Proceed to Checkout
-                </Button>
-              </Link>
+              {/* PAYSTACK PAYMENT BUTTON - Integrated directly */}
+              <PaystackButton 
+                onSuccess={handlePaymentSuccess}
+                onClose={handlePaymentClose}
+              />
               
               <Link href="/products">
                 <Button fullWidth variant="secondary" className="mt-3">
                   Continue Shopping
                 </Button>
               </Link>
+              
+              <p className="text-xs text-gray-500 text-center mt-4">
+                🔒 Secure payment powered by Paystack
+              </p>
             </Card>
           </div>
         </div>
