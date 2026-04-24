@@ -10,12 +10,12 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { formatPrice } from '@/lib/utils';
-import { CreditCard, Truck, Lock } from 'lucide-react';
+import { CreditCard, Truck, Lock, Building2, User } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormData {
-  firstName: string;
-  lastName: string;
+  businessName: string;
+  fullName: string;
   email: string;
   phone: string;
   street: string;
@@ -39,11 +39,10 @@ export default function CheckoutPage() {
   const [activeStep, setActiveStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [shippingMethod, setShippingMethod] = useState('standard');
   
   const [formData, setFormData] = useState<FormData>({
-    firstName: customer?.name?.split(' ')[0] || '',
-    lastName: customer?.name?.split(' ')[1] || '',
+    businessName: '',
+    fullName: customer?.name || '',
     email: customer?.email || '',
     phone: customer?.phone || '',
     street: '',
@@ -63,7 +62,7 @@ export default function CheckoutPage() {
 
   // Calculate totals in Naira
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const shipping = subtotal > 50000 ? 0 : (shippingMethod === 'express' ? 15000 : 5000);
+  const shipping = 0; // FREE SHIPPING - Removed shipping method
   const tax = parseFloat((subtotal * 0.075).toFixed(2)); // 7.5% VAT
   const total = subtotal + shipping + tax;
 
@@ -83,7 +82,7 @@ export default function CheckoutPage() {
   };
 
   const validateShipping = () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+    if (!formData.fullName || !formData.email || !formData.phone) {
       setError('Please fill in all required fields');
       return false;
     }
@@ -217,20 +216,24 @@ export default function CheckoutPage() {
 
                   {activeStep === 1 && (
                     <div className="space-y-4">
+                      {/* Updated: Business Name + Full Name instead of First/Last Name */}
                       <div className="grid grid-cols-2 gap-4">
                         <Input
-                          label="First Name"
-                          name="firstName"
-                          value={formData.firstName}
+                          label="Business Name"
+                          name="businessName"
+                          placeholder="Your business name (optional)"
+                          value={formData.businessName}
                           onChange={handleInputChange}
-                          required
+                          icon={<Building2 size={16} />}
                         />
                         <Input
-                          label="Last Name"
-                          name="lastName"
-                          value={formData.lastName}
+                          label="Full Name"
+                          name="fullName"
+                          placeholder="Your full name"
+                          value={formData.fullName}
                           onChange={handleInputChange}
                           required
+                          icon={<User size={16} />}
                         />
                       </div>
                       <Input
@@ -289,39 +292,12 @@ export default function CheckoutPage() {
                         />
                       </div>
 
-                      <div className="mt-6 pt-6 border-t">
-                        <h3 className="font-bold mb-4">Shipping Method</h3>
-                        <div className="space-y-3">
-                          <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input
-                              type="radio"
-                              name="shipping"
-                              value="standard"
-                              checked={shippingMethod === 'standard'}
-                              onChange={(e) => setShippingMethod(e.target.value)}
-                              className="mr-3"
-                            />
-                            <div className="flex-1">
-                              <p className="font-medium">Standard Shipping (5-7 business days)</p>
-                              <p className="text-sm text-gray-600">
-                                {subtotal > 50000 ? 'FREE' : formatNaira(5000)}
-                              </p>
-                            </div>
-                          </label>
-                          <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                            <input
-                              type="radio"
-                              name="shipping"
-                              value="express"
-                              checked={shippingMethod === 'express'}
-                              onChange={(e) => setShippingMethod(e.target.value)}
-                              className="mr-3"
-                            />
-                            <div className="flex-1">
-                              <p className="font-medium">Express Shipping (2-3 business days)</p>
-                              <p className="text-sm text-gray-600">{formatNaira(15000)}</p>
-                            </div>
-                          </label>
+                      {/* SHIPPING METHOD SECTION - REMOVED */}
+                      {/* Free shipping notice */}
+                      <div className="bg-green-50 p-4 rounded-lg flex items-center gap-3 mt-4">
+                        <Truck size={20} className="text-green-600" />
+                        <div className="text-sm text-green-700">
+                          🚚 FREE Shipping on all orders! Your order will be delivered within 3-5 business days.
                         </div>
                       </div>
 
@@ -338,12 +314,13 @@ export default function CheckoutPage() {
 
                   {activeStep > 1 && (
                     <div className="text-sm text-gray-600 space-y-1">
-                      <p>{formData.firstName} {formData.lastName}</p>
+                      {formData.businessName && (
+                        <p className="font-medium text-gray-800">{formData.businessName}</p>
+                      )}
+                      <p>{formData.fullName}</p>
                       <p>{formData.street}</p>
                       <p>{formData.city}, {formData.state} {formData.postalCode}</p>
-                      <p className="mt-3 font-medium">
-                        {shippingMethod === 'express' ? 'Express' : 'Standard'} Shipping
-                      </p>
+                      <p className="mt-3 text-green-600 font-medium">🚚 Free Shipping (3-5 business days)</p>
                     </div>
                   )}
                 </Card>
@@ -447,11 +424,15 @@ export default function CheckoutPage() {
                   <div className="mb-6 pb-6 border-b">
                     <h3 className="font-bold mb-2">Shipping Address</h3>
                     <p className="text-sm text-gray-600">
-                      {formData.firstName} {formData.lastName}<br />
+                      {formData.businessName && (
+                        <><span className="font-medium">{formData.businessName}</span><br /></>
+                      )}
+                      {formData.fullName}<br />
                       {formData.street}<br />
                       {formData.city}, {formData.state} {formData.postalCode}<br />
                       {formData.country}
                     </p>
+                    <p className="text-sm text-green-600 mt-2">🚚 Free Shipping (3-5 business days)</p>
                   </div>
 
                   <div className="mb-6">
@@ -508,9 +489,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
-                  <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
-                    {shipping === 0 ? 'FREE' : formatNaira(shipping)}
-                  </span>
+                  <span className="text-green-600 font-medium">FREE</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax (7.5% VAT)</span>
@@ -527,6 +506,7 @@ export default function CheckoutPage() {
                 <p>✓ Secure Checkout</p>
                 <p>✓ Money Back Guarantee</p>
                 <p>✓ Free Returns</p>
+                <p>✓ Free Shipping on all orders</p>
               </div>
             </Card>
           </div>
