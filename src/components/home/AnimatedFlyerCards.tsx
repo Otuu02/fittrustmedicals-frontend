@@ -1,4 +1,3 @@
-// src/components/home/AnimatedFlyerCards.tsx
 'use client';
 
 import { motion } from 'framer-motion';
@@ -56,8 +55,8 @@ export default function AnimatedFlyerCards() {
           key={flyer.id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
-          whileHover={{ y: -5, transition: { duration: 0.2 } }}
+          transition={{ delay: index * 0.15, duration: 0.6 }}  // Slower entrance
+          whileHover={{ y: -5, transition: { duration: 0.3 } }}  // Smoother hover
           className="rounded-xl overflow-hidden cursor-pointer group relative"
         >
           <Link href={flyer.link}>
@@ -67,7 +66,7 @@ export default function AnimatedFlyerCards() {
                 className="absolute inset-0 bg-white/10"
                 initial={{ x: '-100%' }}
                 whileHover={{ x: '100%' }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}  // Slower
               />
               
               {/* Badge */}
@@ -87,9 +86,18 @@ export default function AnimatedFlyerCards() {
                   <div>
                     <p className="text-2xl font-bold">{flyer.price}</p>
                   </div>
+                  {/* FIXED: Slower, smoother animation */}
                   <motion.div
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    animate={{ 
+                      x: [0, 6, 0],
+                      y: [0, -2, 0]
+                    }}
+                    transition={{ 
+                      repeat: Infinity, 
+                      duration: 3,  // Changed from 1.5 to 3 seconds (slower)
+                      ease: "easeInOut",  // Smooth easing
+                      repeatType: "loop"
+                    }}
                   >
                     <TrendingUp className="w-5 h-5" />
                   </motion.div>
