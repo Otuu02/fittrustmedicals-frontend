@@ -7,7 +7,6 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import PaystackButton from '@/components/payment/PaystackButton';
 
 export default function CartPage() {
   const router = useRouter();
@@ -19,9 +18,7 @@ export default function CartPage() {
   }, []);
 
   const totalPrice = getTotalPrice();
-  const shipping = totalPrice > 50000 ? 0 : 5000;
-  const tax = totalPrice * 0.075; // 7.5% VAT
-  const grandTotal = totalPrice + shipping + tax;
+  const grandTotal = totalPrice; // No tax, no shipping
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -39,15 +36,6 @@ export default function CartPage() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
-  };
-
-  const handlePaymentSuccess = () => {
-    // Optional: Add any additional logic after successful payment
-    console.log('Payment completed successfully!');
-  };
-
-  const handlePaymentClose = () => {
-    console.log('Payment modal closed');
   };
 
   if (!isMounted) {
@@ -168,7 +156,7 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* Order Summary */}
+          {/* Order Summary - No Shipping, No Tax */}
           <div className="lg:col-span-1">
             <Card className="p-6 sticky top-24">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
@@ -178,16 +166,6 @@ export default function CartPage() {
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">{formatNaira(totalPrice)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">
-                    {shipping === 0 ? 'Free' : formatNaira(shipping)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tax (7.5% VAT)</span>
-                  <span className="font-medium">{formatNaira(tax)}</span>
-                </div>
               </div>
               
               <div className="flex justify-between text-lg font-bold mt-4 mb-6">
@@ -195,11 +173,12 @@ export default function CartPage() {
                 <span className="text-blue-600">{formatNaira(grandTotal)}</span>
               </div>
               
-              {/* PAYSTACK PAYMENT BUTTON - Integrated directly */}
-              <PaystackButton 
-                onSuccess={handlePaymentSuccess}
-                onClose={handlePaymentClose}
-              />
+              {/* Proceed to Checkout Button */}
+              <Link href="/checkout">
+                <Button fullWidth size="lg">
+                  Proceed to Checkout
+                </Button>
+              </Link>
               
               <Link href="/products">
                 <Button fullWidth variant="secondary" className="mt-3">
@@ -208,7 +187,7 @@ export default function CartPage() {
               </Link>
               
               <p className="text-xs text-gray-500 text-center mt-4">
-                🔒 Secure payment powered by Paystack
+                🔒 Secure checkout powered by Paystack
               </p>
             </Card>
           </div>
