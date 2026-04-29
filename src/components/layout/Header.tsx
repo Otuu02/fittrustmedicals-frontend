@@ -29,10 +29,8 @@ export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isClient, setIsClient] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const accountRef = useRef<HTMLDivElement>(null);
-  const categoriesRef = useRef<HTMLDivElement>(null);
 
   const { customer, isAuthenticated, logout } = useAuthStore();
   const { items } = useCartStore();
@@ -41,14 +39,11 @@ export function Header() {
     setIsClient(true);
   }, []);
 
-  // Close dropdowns when clicking outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
         setAccountDropdownOpen(false);
-      }
-      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
-        setCategoriesOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -202,42 +197,6 @@ export function Header() {
                   </span>
                 )}
               </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Navigation - Only All Categories Button */}
-      <div className="bg-white border-t border-gray-100">
-        <div className="px-3">
-          <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
-            {/* All Categories Dropdown Button */}
-            <div className="relative flex-shrink-0" ref={categoriesRef}>
-              <button
-                onClick={() => setCategoriesOpen(!categoriesOpen)}
-                className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-full text-xs font-medium whitespace-nowrap hover:bg-blue-700 transition"
-              >
-                <Menu size={14} />
-                All Categories
-                <ChevronDown size={12} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {categoriesOpen && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border max-h-96 overflow-y-auto"
-                  style={{ zIndex: 99999 }}
-                >
-                  {allCategories.map((cat) => (
-                    <Link
-                      key={cat.name}
-                      href={cat.href}
-                      onClick={() => setCategoriesOpen(false)}
-                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 border-b last:border-0 transition"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
