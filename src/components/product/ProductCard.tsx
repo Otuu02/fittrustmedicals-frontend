@@ -94,7 +94,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
       className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
     >
       <Link href={`/products/${product.id}`}>
-        {/* Image Container - Clean, only discount badge and wishlist */}
+        {/* Image Container - Clean, only discount badge */}
         <div className="relative aspect-square w-full overflow-hidden bg-gray-100 product-image-container">
           <SafeImage
             src={product.image}
@@ -110,10 +110,10 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
             </span>
           )}
 
-          {/* Wishlist Button */}
+          {/* Wishlist Button - HIDDEN ON MOBILE (heart emoji removed from covering images) */}
           <button 
             onClick={handleWishlist}
-            className={`absolute top-2 right-2 p-1 sm:p-2 rounded-full transition-colors z-10 ${
+            className={`absolute top-2 right-2 p-1 sm:p-2 rounded-full transition-colors z-10 hidden md:block ${
               inWishlist 
                 ? 'bg-red-500 text-white' 
                 : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500'
