@@ -89,88 +89,89 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.2 }}
-      className="group bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.3 }}
+      className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
     >
       <Link href={`/products/${product.id}`}>
+        {/* Fixed image container - prevents cutting off */}
         <div className="relative aspect-square w-full overflow-hidden bg-gray-100 product-image-container">
           <SafeImage
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-contain p-2 sm:p-3 group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500"
             fallback={getValidImageUrl(null, product.category)}
           />
           
-          {/* Badges - Smaller on mobile */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
             {product.isPromotional && showDiscount && product.discountPercentage && (
-              <span className="bg-red-500 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+              <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
                 -{product.discountPercentage}%
               </span>
             )}
             {product.featured && (
-              <span className="bg-blue-500 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+              <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
                 Featured
               </span>
             )}
           </div>
 
-          {/* Wishlist Button - Smaller on mobile */}
+          {/* Wishlist Button */}
           <button 
             onClick={handleWishlist}
-            className={`absolute top-2 right-2 p-1.5 sm:p-2 rounded-full transition-colors z-10 ${
+            className={`absolute top-3 right-3 p-2 rounded-full transition-colors z-10 ${
               inWishlist 
                 ? 'bg-red-500 text-white' 
                 : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500'
             }`}
           >
-            <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${inWishlist ? 'fill-current' : ''}`} />
+            <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
           </button>
 
-          {/* Quick Add Button - Hidden on mobile, visible on hover desktop */}
+          {/* Quick Add Button */}
           <button 
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="absolute bottom-2 right-2 bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10 hidden sm:flex"
+            className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10"
           >
-            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <ShoppingCart className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-2 sm:p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] sm:text-xs font-medium text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full truncate max-w-[80px] sm:max-w-none">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
               {product.category}
             </span>
-            <div className="flex items-center space-x-0.5">
-              <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400 fill-current" />
-              <span className="text-[10px] sm:text-xs text-gray-600">{product.rating || '0.0'}</span>
+            <div className="flex items-center space-x-1">
+              <Star className="w-4 h-4 text-yellow-400 fill-current" />
+              <span className="text-sm text-gray-600">{product.rating || '0.0'}</span>
             </div>
           </div>
           
-          <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 group-hover:text-blue-600 transition-colors text-xs sm:text-sm">
+          <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
             {product.name}
           </h3>
           
-          <p className="text-[10px] sm:text-xs text-gray-500 line-clamp-2 mb-2 hidden sm:block">
+          <p className="text-sm text-gray-500 line-clamp-2 mb-3">
             {product.description}
           </p>
 
           {/* Price Section */}
           <div className="flex items-center justify-between flex-wrap gap-1">
             <div>
-              <span className="text-sm sm:text-base font-bold text-gray-800">
+              <span className="text-xl font-bold text-gray-800">
                 {formatPrice(product.price)}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="ml-1 text-[9px] sm:text-xs text-gray-400 line-through">
+                <span className="ml-2 text-sm text-gray-400 line-through">
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
             </div>
-            <span className={`text-[9px] sm:text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {product.stock > 0 ? `${product.stock}` : 'Out'}
+            <span className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
             </span>
           </div>
         </div>
