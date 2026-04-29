@@ -64,7 +64,6 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Fetch all products
         const response = await fetch('/api/catalog/products');
         
         if (!response.ok) {
@@ -87,7 +86,6 @@ export default function Home() {
           productsData = data.products;
         }
         
-        // Fetch products with active campaigns ONLY
         const campaignResponse = await fetch('/api/catalog/products-with-campaigns', {
           cache: 'no-store',
           headers: {
@@ -109,7 +107,6 @@ export default function Home() {
           setActiveCampaigns([]);
         }
         
-        // Set featured products
         if (productsData.length > 0) {
           const featured = productsData.filter((p: Product) => p.featured).slice(0, 8);
           setFeaturedProducts(featured.length > 0 ? featured : productsData.slice(0, 8));
@@ -220,7 +217,7 @@ export default function Home() {
         <AnimatedCountdownBanner />
       </div>
 
-      {/* Flash Sales Section */}
+      {/* Flash Sales Section - FIXED grid for mobile */}
       <section className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="bg-red-500 text-white px-6 py-3 flex items-center justify-between">
@@ -247,7 +244,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Medical Equipment Section */}
+      {/* Featured Medical Equipment Section - FIXED grid for mobile */}
       <section className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-3 border-b flex items-center justify-between">
@@ -260,7 +257,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {featuredProducts.slice(0, 6).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -269,7 +266,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Diagnostic & Lab Equipment Section */}
+      {/* Diagnostic & Lab Equipment Section - FIXED grid for mobile */}
       <section className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="px-6 py-3 border-b flex items-center justify-between">
@@ -282,7 +279,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {featuredProducts.slice(3, 9).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
