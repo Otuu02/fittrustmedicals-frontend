@@ -119,19 +119,19 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Search Bar - Clean version like Jumia (no Go button) */}
+            {/* Search Bar - Clean version like Jumia (perfectly centered icon) */}
             <div className="flex-1 max-w-[55%] sm:max-w-md">
               <form onSubmit={handleSearch} className="relative">
                 <Search 
-                  size={16} 
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                  size={18} 
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
                 />
                 <input
                   type="text"
                   placeholder="Search products, brands and categories"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full py-2 sm:py-2.5 pl-10 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
+                  className="w-full py-2.5 sm:py-3 pl-12 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
                 />
               </form>
             </div>
