@@ -89,89 +89,86 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
 
   return (
     <motion.div
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.3 }}
-      className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="group bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
     >
       <Link href={`/products/${product.id}`}>
-        {/* Fixed image container - prevents cutting off */}
-        <div className="relative aspect-square w-full overflow-hidden bg-gray-100 product-image-container">
+        {/* Image Container - Compact for mobile */}
+        <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
           <SafeImage
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
             fallback={getValidImageUrl(null, product.category)}
           />
           
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-            {product.isPromotional && showDiscount && product.discountPercentage && (
-              <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                -{product.discountPercentage}%
-              </span>
-            )}
-            {product.featured && (
-              <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                Featured
-              </span>
-            )}
-          </div>
+          {/* Discount Badge - Small */}
+          {product.isPromotional && showDiscount && product.discountPercentage && (
+            <span className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full z-10">
+              -{product.discountPercentage}%
+            </span>
+          )}
 
-          {/* Wishlist Button - FIXED: Smaller on mobile, repositioned */}
+          {/* Wishlist Button - Small, transparent on mobile */}
           <button 
             onClick={handleWishlist}
-            className={`absolute top-2 right-2 p-1 sm:p-2 rounded-full transition-colors z-10 ${
+            className={`absolute top-1 right-1 p-1 rounded-full transition-colors z-10 ${
               inWishlist 
                 ? 'bg-red-500 text-white' 
-                : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500'
+                : 'bg-white/70 backdrop-blur-sm text-gray-500'
             }`}
           >
-            <Heart className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${inWishlist ? 'fill-current' : ''}`} />
+            <Heart className={`w-3 h-3 ${inWishlist ? 'fill-current' : ''}`} />
           </button>
 
-          {/* Quick Add Button - FIXED: Hidden on mobile, only visible on desktop hover */}
+          {/* Add to Cart Button - Hidden on mobile */}
           <button 
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="absolute bottom-4 right-4 bg-blue-600 text-white p-2 sm:p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10 hidden sm:flex"
+            className="absolute bottom-1 right-1 bg-blue-600 text-white p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10 hidden sm:flex"
           >
-            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ShoppingCart className="w-3 h-3" />
           </button>
         </div>
 
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+        {/* Product Info - Compact */}
+        <div className="p-2">
+          {/* Category & Rating */}
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full truncate max-w-[70px]">
               {product.category}
             </span>
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-              <span className="text-sm text-gray-600">{product.rating || '0.0'}</span>
+            <div className="flex items-center space-x-0.5">
+              <Star className="w-2.5 h-2.5 text-yellow-400 fill-current" />
+              <span className="text-[9px] text-gray-600">{product.rating || '0.0'}</span>
             </div>
           </div>
           
-          <h3 className="font-bold text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+          {/* Product Name */}
+          <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 group-hover:text-blue-600 transition-colors mb-1">
             {product.name}
           </h3>
           
-          <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+          {/* Description - Only 1 line on mobile */}
+          <p className="text-[9px] text-gray-500 line-clamp-1 mb-1">
             {product.description}
           </p>
 
           {/* Price Section */}
-          <div className="flex items-center justify-between flex-wrap gap-1">
+          <div className="flex items-center justify-between">
             <div>
-              <span className="text-xl font-bold text-gray-800">
+              <span className="text-xs font-bold text-gray-800">
                 {formatPrice(product.price)}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="ml-2 text-sm text-gray-400 line-through">
+                <span className="ml-1 text-[8px] text-gray-400 line-through">
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
             </div>
-            <span className={`text-xs ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            <span className={`text-[8px] ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {product.stock > 0 ? `${product.stock}` : 'Out'}
             </span>
           </div>
         </div>
