@@ -117,25 +117,25 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
             )}
           </div>
 
-          {/* Wishlist Button */}
+          {/* Wishlist Button - FIXED: Smaller on mobile, repositioned */}
           <button 
             onClick={handleWishlist}
-            className={`absolute top-3 right-3 p-2 rounded-full transition-colors z-10 ${
+            className={`absolute top-2 right-2 p-1 sm:p-2 rounded-full transition-colors z-10 ${
               inWishlist 
                 ? 'bg-red-500 text-white' 
                 : 'bg-white/80 backdrop-blur-sm text-gray-600 hover:text-red-500'
             }`}
           >
-            <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
+            <Heart className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${inWishlist ? 'fill-current' : ''}`} />
           </button>
 
-          {/* Quick Add Button */}
+          {/* Quick Add Button - FIXED: Hidden on mobile, only visible on desktop hover */}
           <button 
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10"
+            className="absolute bottom-4 right-4 bg-blue-600 text-white p-2 sm:p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed z-10 hidden sm:flex"
           >
-            <ShoppingCart className="w-5 h-5" />
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
