@@ -729,3 +729,34 @@ header .relative {
 .relative .absolute {
   pointer-events: auto !important;
 }
+/* ============================================
+   CRITICAL DROPDOWN FIX - FORCE ABOVE HERO
+   ============================================ */
+
+/* Force ALL dropdowns to appear above everything */
+.absolute {
+  z-index: 99999 !important;
+}
+
+/* Ensure header dropdown container is highest */
+header .relative {
+  z-index: 100000 !important;
+}
+
+/* Hero section must be lower */
+.bg-gradient-to-r.from-blue-600,
+.container .rounded-lg {
+  z-index: 1 !important;
+  position: relative;
+}
+
+/* Make sure no white background blocks dropdown */
+.bg-white {
+  background-color: white;
+}
+
+/* The dropdown panel itself */
+.bg-white.rounded-lg.shadow-lg {
+  z-index: 100001 !important;
+  position: absolute !important;
+}
