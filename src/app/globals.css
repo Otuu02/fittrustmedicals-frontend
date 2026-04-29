@@ -103,6 +103,13 @@
     font-size: 0.875rem;
   }
   
+  /* Product card button fixes - prevent covering image */
+  .product-card button {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 6px;
+  }
+  
   /* Flash sale timer fixes */
   .flash-sale-timer {
     display: flex;
@@ -690,4 +697,42 @@ img {
 body {
   overflow-x: hidden;
   width: 100%;
+}
+
+/* ============================================
+   DROPDOWN Z-INDEX FIX - Ensures dropdown appears above all content
+   ============================================ */
+
+.z-dropdown {
+  z-index: 9999 !important;
+}
+
+/* Ensure categories dropdown appears above hero section */
+.relative .absolute {
+  z-index: 9999;
+}
+
+/* ============================================
+   MOBILE CHAT WINDOW FIX
+   ============================================ */
+
+@media (max-width: 768px) {
+  .chat-window-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+/* ============================================
+   SEARCH ICON FIX - Prevents icon from blocking input
+   ============================================ */
+
+.pointer-events-none {
+  pointer-events: none;
 }

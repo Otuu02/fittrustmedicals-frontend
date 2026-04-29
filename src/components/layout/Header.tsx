@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useCartStore } from '@/stores/cartStore';
@@ -56,17 +56,6 @@ export function Header() {
   }, []);
 
   const cartItemCount = isClient ? calculateCartCount(items) : 0;
-
-  // Categories to display directly in header (like Temu) - NO ICONS
-  const mainCategories = [
-    { name: 'Diagnostic Equipment', href: '/products?category=diagnostic' },
-    { name: 'Surgical Supplies', href: '/products?category=surgical' },
-    { name: 'PPE & Safety', href: '/products?category=ppe' },
-    { name: 'Lab Equipment', href: '/products?category=lab' },
-    { name: 'First Aid', href: '/products?category=first-aid' },
-    { name: 'Hospital Furniture', href: '/products?category=furniture' },
-    { name: 'Pharmaceuticals', href: '/products?category=pharma' },
-  ];
 
   const allCategories = [
     { name: 'Diagnostic Equipment', href: '/products?category=diagnostic' },
@@ -147,7 +136,7 @@ export function Header() {
                 />
                 <Search 
                   size={13} 
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
                 />
                 <button
                   type="submit"
@@ -158,9 +147,9 @@ export function Header() {
               </form>
             </div>
 
-            {/* Icons Row - Login + Cart (BOTH visible on mobile) */}
+            {/* Icons Row - Login + Cart */}
             <div className="flex items-center gap-1 flex-shrink-0">
-              {/* User/Login Icon - ALWAYS VISIBLE on mobile */}
+              {/* User/Login Icon */}
               <div className="relative">
                 <button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
@@ -200,7 +189,7 @@ export function Header() {
                 )}
               </div>
 
-              {/* Cart - ALWAYS VISIBLE */}
+              {/* Cart */}
               <Link 
                 href="/cart" 
                 className="relative p-2 rounded-lg hover:bg-gray-100"
@@ -218,11 +207,11 @@ export function Header() {
         </div>
       </div>
 
-      {/* Category Navigation */}
+      {/* Category Navigation - Only All Categories Button (removed mainCategories) */}
       <div className="bg-white border-t border-gray-100">
         <div className="px-3">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
-            {/* All Categories Dropdown Button */}
+            {/* All Categories Dropdown Button - Fixed z-index */}
             <div className="relative flex-shrink-0" ref={categoriesRef}>
               <button
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
@@ -233,7 +222,7 @@ export function Header() {
                 <ChevronDown size={12} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </button>
               {categoriesOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-50 max-h-96 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-[100] max-h-96 overflow-y-auto">
                   {allCategories.map((cat) => (
                     <Link
                       key={cat.name}
@@ -247,17 +236,6 @@ export function Header() {
                 </div>
               )}
             </div>
-
-            {/* Main Categories */}
-            {mainCategories.map((category) => (
-              <Link
-                key={category.name}
-                href={category.href}
-                className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-full whitespace-nowrap transition"
-              >
-                {category.name}
-              </Link>
-            ))}
           </div>
         </div>
       </div>

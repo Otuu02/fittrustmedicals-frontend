@@ -11,9 +11,7 @@ import {
   User, 
   Minimize2,
   Maximize2,
-  Clock,
-  CheckCheck,
-  Loader2
+  CheckCheck
 } from 'lucide-react';
 
 interface Message {
@@ -41,6 +39,7 @@ const aiResponses = {
 export default function AIChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -55,12 +54,20 @@ export default function AIChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom of messages
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Focus input when chat opens
   useEffect(() => {
     if (isOpen && !isMinimized) {
       setTimeout(() => {
@@ -106,7 +113,6 @@ export default function AIChat() {
   const sendMessage = async () => {
     if (!inputText.trim()) return;
 
-    // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputText,
@@ -118,7 +124,6 @@ export default function AIChat() {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI thinking
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -151,158 +156,168 @@ export default function AIChat() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all z-50 group"
+          className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all z-50"
         >
-          <MessageCircle className="w-6 h-6" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+          <MessageCircle className="w-5 h-5" />
         </motion.button>
       )}
 
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0, 
-              scale: 1,
-              height: isMinimized ? 'auto' : '500px',
-              width: isMinimized ? '300px' : '380px'
-            }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className={`fixed bottom-6 right-6 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-200 ${
-              isMinimized ? 'h-auto' : 'h-[500px]'
-            } w-[380px]`}
-          >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="bg-white/20 p-1.5 rounded-full">
-                  <Bot className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold">AI Support Assistant</h3>
-                  <p className="text-xs text-blue-100">Online • 24/7</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="hover:bg-white/20 p-1 rounded transition"
-                >
-                  {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="hover:bg-white/20 p-1 rounded transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {!isMinimized && (
-              <>
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 h-[380px] bg-gray-50">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          message.sender === 'user'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-200 text-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-start gap-2">
-                          {message.sender === 'bot' && (
-                            <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          )}
-                          <div>
-                            <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                            <div className="flex items-center gap-1 mt-1">
-                              <span className="text-[10px] opacity-70">
-                                {formatTime(message.timestamp)}
-                              </span>
-                              {message.sender === 'user' && message.status === 'sent' && (
-                                <CheckCheck className="w-3 h-3 opacity-70" />
-                              )}
-                            </div>
-                          </div>
-                          {message.sender === 'user' && (
-                            <User className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Typing indicator */}
-                  {isTyping && (
-                    <div className="flex justify-start">
-                      <div className="bg-white border border-gray-200 rounded-lg p-3">
-                        <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Quick Reply Buttons */}
-                <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {['Products', 'Shipping', 'Returns', 'Payment', 'Track Order'].map((topic) => (
-                      <button
-                        key={topic}
-                        onClick={() => {
-                          setInputText(`Tell me about ${topic.toLowerCase()}`);
-                          setTimeout(() => sendMessage(), 100);
-                        }}
-                        className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition whitespace-nowrap"
-                      >
-                        {topic}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Input */}
-                <div className="p-4 border-t border-gray-200 bg-white">
-                  <div className="flex gap-2">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type your message..."
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      onClick={sendMessage}
-                      disabled={!inputText.trim()}
-                      className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-2 text-center">
-                    Powered by AI • Responses are automated
-                  </p>
-                </div>
-              </>
+          <>
+            {/* Backdrop - Only on mobile */}
+            {isMobile && (
+              <div 
+                className="fixed inset-0 bg-black/50 z-40"
+                onClick={() => setIsOpen(false)}
+              />
             )}
-          </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ 
+                opacity: 1, 
+                y: 0, 
+                scale: 1,
+                height: isMinimized ? 'auto' : 'auto',
+                width: isMobile ? 'calc(100vw - 2rem)' : '380px'
+              }}
+              exit={{ opacity: 0, y: 50, scale: 0.9 }}
+              className={`fixed bottom-4 right-4 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-200 ${
+                isMinimized ? 'h-auto' : 'h-[500px]'
+              }`}
+              style={{ width: isMobile ? 'calc(100vw - 2rem)' : '380px', maxWidth: '380px' }}
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="bg-white/20 p-1.5 rounded-full">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">AI Support Assistant</h3>
+                    <p className="text-[10px] text-blue-100">Online • 24/7</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsMinimized(!isMinimized)}
+                    className="hover:bg-white/20 p-1 rounded transition"
+                  >
+                    {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
+                  </button>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="hover:bg-white/20 p-1 rounded transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {!isMinimized && (
+                <>
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-2 h-[380px] bg-gray-50">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg p-2 ${
+                            message.sender === 'user'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white border border-gray-200 text-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-start gap-1.5">
+                            {message.sender === 'bot' && (
+                              <Bot className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                            )}
+                            <div>
+                              <p className="text-xs whitespace-pre-wrap">{message.text}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[9px] opacity-70">
+                                  {formatTime(message.timestamp)}
+                                </span>
+                                {message.sender === 'user' && message.status === 'sent' && (
+                                  <CheckCheck className="w-2.5 h-2.5 opacity-70" />
+                                )}
+                              </div>
+                            </div>
+                            {message.sender === 'user' && (
+                              <User className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-white border border-gray-200 rounded-lg p-2">
+                          <div className="flex gap-1">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Quick Reply Buttons */}
+                  <div className="px-3 py-2 bg-gray-50 border-t border-gray-200">
+                    <div className="flex gap-1.5 overflow-x-auto pb-1">
+                      {['Products', 'Shipping', 'Returns', 'Payment'].map((topic) => (
+                        <button
+                          key={topic}
+                          onClick={() => {
+                            setInputText(`Tell me about ${topic.toLowerCase()}`);
+                            setTimeout(() => sendMessage(), 100);
+                          }}
+                          className="px-2 py-0.5 bg-white border border-gray-300 rounded-full text-[10px] text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition whitespace-nowrap"
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Input */}
+                  <div className="p-3 border-t border-gray-200 bg-white">
+                    <div className="flex gap-2">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type your message..."
+                        className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={sendMessage}
+                        disabled={!inputText.trim()}
+                        className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <p className="text-[9px] text-gray-400 mt-1 text-center">
+                      Powered by AI • Responses are automated
+                    </p>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
