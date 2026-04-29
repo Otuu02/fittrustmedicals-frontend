@@ -94,7 +94,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
       className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
     >
       <Link href={`/products/${product.id}`}>
-        {/* Image Container - Clean, no text overlay except discount */}
+        {/* Image Container - Clean, only discount badge and wishlist */}
         <div className="relative aspect-square w-full overflow-hidden bg-gray-100 product-image-container">
           <SafeImage
             src={product.image}
@@ -103,7 +103,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
             fallback={getValidImageUrl(null, product.category)}
           />
           
-          {/* Discount Badge ONLY - (Category moved below image) */}
+          {/* ONLY DISCOUNT BADGE - Category removed from image */}
           {product.isPromotional && showDiscount && product.discountPercentage && (
             <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full z-10">
               -{product.discountPercentage}%
@@ -132,9 +132,9 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
           </button>
         </div>
 
-        {/* Product Info - Category moved here (below image) */}
+        {/* Product Info - Category appears here (below image) */}
         <div className="p-2 sm:p-4">
-          {/* Category Badge - NOW BELOW IMAGE (not covering it) */}
+          {/* Category - Now below image, not covering it */}
           <span className="inline-block text-[10px] sm:text-xs font-medium text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full mb-1 sm:mb-2">
             {product.category}
           </span>
@@ -147,7 +147,7 @@ export function ProductCard({ product, showDiscount, onAddSuccess }: ProductCard
             {product.description}
           </p>
 
-          {/* Rating Row */}
+          {/* Rating */}
           <div className="flex items-center gap-1 mb-1 sm:mb-2">
             <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" />
             <span className="text-[10px] sm:text-sm text-gray-600">{product.rating || '0.0'}</span>
