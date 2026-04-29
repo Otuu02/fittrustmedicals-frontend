@@ -119,26 +119,20 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Search Bar */}
-            <div className="flex-1 max-w-[40%] sm:max-w-md">
+            {/* Search Bar - Clean version like Jumia (no Go button) */}
+            <div className="flex-1 max-w-[55%] sm:max-w-md">
               <form onSubmit={handleSearch} className="relative">
+                <Search 
+                  size={16} 
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                />
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder="Search products, brands and categories"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-2 py-1.5 sm:py-2 pl-7 pr-12 rounded-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs sm:text-sm bg-gray-50"
+                  className="w-full py-2 sm:py-2.5 pl-10 pr-4 rounded-full border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-gray-50"
                 />
-                <Search 
-                  size={13} 
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium hover:bg-blue-700 transition"
-                >
-                  Go
-                </button>
               </form>
             </div>
 
