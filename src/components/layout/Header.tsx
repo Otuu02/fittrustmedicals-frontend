@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname, useRouter } next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useCartStore } from '@/stores/cartStore';
@@ -207,11 +207,11 @@ export function Header() {
         </div>
       </div>
 
-      {/* Category Navigation - Only All Categories Button (removed mainCategories) */}
+      {/* Category Navigation - Only All Categories Button */}
       <div className="bg-white border-t border-gray-100">
         <div className="px-3">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
-            {/* All Categories Dropdown Button - Fixed z-index */}
+            {/* All Categories Dropdown Button - Fixed z-index to 9999 */}
             <div className="relative flex-shrink-0" ref={categoriesRef}>
               <button
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
@@ -222,7 +222,7 @@ export function Header() {
                 <ChevronDown size={12} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </button>
               {categoriesOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-[100] max-h-96 overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-[9999] max-h-96 overflow-y-auto">
                   {allCategories.map((cat) => (
                     <Link
                       key={cat.name}

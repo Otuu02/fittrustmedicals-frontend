@@ -736,3 +736,46 @@ body {
 .pointer-events-none {
   pointer-events: none;
 }
+/* ============================================
+   DROPDOWN Z-INDEX FIX - Ensures dropdown appears above all content
+   ============================================ */
+
+/* Force categories dropdown to appear above everything */
+.z-50,
+.z-40,
+.z-30,
+.z-20,
+.z-10 {
+  position: relative;
+}
+
+.absolute.z-\[9999\] {
+  z-index: 9999 !important;
+}
+
+/* Ensure dropdown menu appears above hero content */
+.relative .absolute {
+  z-index: 9999;
+}
+
+/* Lower hero section z-index to allow dropdown overlay */
+.hero-section,
+.bg-gradient-to-r {
+  z-index: 1;
+  position: relative;
+}
+
+/* Make sure header dropdowns are above all */
+header .absolute,
+header .relative .absolute {
+  z-index: 9999 !important;
+}
+
+/* Fix for mobile menu */
+.fixed.inset-0 {
+  z-index: 9998;
+}
+
+.fixed.left-0.w-80 {
+  z-index: 9999;
+}
