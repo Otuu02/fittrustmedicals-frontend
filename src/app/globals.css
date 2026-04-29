@@ -103,13 +103,6 @@
     font-size: 0.875rem;
   }
   
-  /* Product card button fixes - prevent covering image */
-  .product-card button {
-    min-width: 32px;
-    min-height: 32px;
-    padding: 6px;
-  }
-  
   /* Flash sale timer fixes */
   .flash-sale-timer {
     display: flex;
@@ -698,84 +691,7 @@ body {
   overflow-x: hidden;
   width: 100%;
 }
-
-/* ============================================
-   DROPDOWN Z-INDEX FIX - Ensures dropdown appears above all content
-   ============================================ */
-
-.z-dropdown {
-  z-index: 9999 !important;
-}
-
-/* Ensure categories dropdown appears above hero section */
-.relative .absolute {
-  z-index: 9999;
-}
-
-/* ============================================
-   MOBILE CHAT WINDOW FIX
-   ============================================ */
-
-@media (max-width: 768px) {
-  .chat-window-mobile {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-  }
-}
-
-/* ============================================
-   SEARCH ICON FIX - Prevents icon from blocking input
-   ============================================ */
-
-.pointer-events-none {
-  pointer-events: none;
-}
-/* ============================================
-   DROPDOWN Z-INDEX FIX - Ensures dropdown appears above all content
-   ============================================ */
-
-/* Force categories dropdown to appear above everything */
-.z-50,
-.z-40,
-.z-30,
-.z-20,
-.z-10 {
-  position: relative;
-}
-
-.absolute.z-\[9999\] {
-  z-index: 9999 !important;
-}
-
-/* Ensure dropdown menu appears above hero content */
-.relative .absolute {
-  z-index: 9999;
-}
-
-/* Lower hero section z-index to allow dropdown overlay */
-.hero-section,
-.bg-gradient-to-r {
-  z-index: 1;
-  position: relative;
-}
-
-/* Make sure header dropdowns are above all */
-header .absolute,
+/* Force categories dropdown above hero section */
 header .relative .absolute {
-  z-index: 9999 !important;
-}
-
-/* Fix for mobile menu */
-.fixed.inset-0 {
-  z-index: 9998;
-}
-
-.fixed.left-0.w-80 {
-  z-index: 9999;
+  z-index: 99999 !important;
 }

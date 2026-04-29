@@ -211,7 +211,7 @@ export function Header() {
       <div className="bg-white border-t border-gray-100">
         <div className="px-3">
           <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-hide">
-            {/* All Categories Dropdown Button - Fixed z-index to 9999 */}
+            {/* All Categories Dropdown Button */}
             <div className="relative flex-shrink-0" ref={categoriesRef}>
               <button
                 onClick={() => setCategoriesOpen(!categoriesOpen)}
@@ -222,7 +222,10 @@ export function Header() {
                 <ChevronDown size={12} className={`transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`} />
               </button>
               {categoriesOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-[9999] max-h-96 overflow-y-auto">
+                <div 
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border max-h-96 overflow-y-auto"
+                  style={{ zIndex: 99999 }}
+                >
                   {allCategories.map((cat) => (
                     <Link
                       key={cat.name}
